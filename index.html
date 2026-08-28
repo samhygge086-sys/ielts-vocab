@@ -265,6 +265,9 @@ main{max-width:960px;margin:0 auto;padding:20px 16px 60px}
 .start-btn:hover{background:var(--blue-deep)}
 .q-progress{height:8px;background:var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px}
 .q-progress .bar{height:100%;background:var(--blue);transition:width .3s}
+.quiz-top-bar{display:flex;justify-content:flex-start;margin-bottom:10px;}
+.quiz-back-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;}
+.quiz-back-btn:hover{border-color:var(--primary);color:var(--primary);}
 .q-card{
   background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
   padding:24px;box-shadow:var(--shadow);
@@ -490,7 +493,7 @@ main{max-width:960px;margin:0 auto;padding:20px 16px 60px}
           <button data-mode="mc">① 英汉选词</button>
           <button data-mode="fill">② 汉译英填空</button>
           <button data-mode="listen">③ 听音辨词</button>
-          <button data-mode="sentence">④ 真题例句填空</button>
+          <button data-mode="sentence">④ 真题例句选词</button>
         </div>
       </div>
       <div class="opt-row">
@@ -515,9 +518,13 @@ main{max-width:960px;margin:0 auto;padding:20px 16px 60px}
 
     <!-- 答题中 -->
     <div id="quizRun" class="hidden">
-      <div class="q-progress"><div class="bar" id="qBar" style="width:0%"></div></div>
-      <div class="q-card" id="qBody"></div>
-    </div>
+  <div class="quiz-top-bar">
+    <button class="quiz-back-btn" onclick="quitQuiz()">← 返回首页</button>
+  </div>
+  <div class="q-progress"><div class="bar" id="qBar" style="width:0%"></div></div>
+  <div class="q-card" id="qBody"></div>
+</div>
+      
 
     <!-- 结果页 -->
     <div id="quizResult" class="hidden"></div>
@@ -1006,7 +1013,215 @@ const WORDS = [
   {w:"specify", uk:"/ˈspesɪfaɪ/", us:"/ˈspesɪfaɪ/", d:"v. 明确说明；指定", ex:"The contract specifies the exact delivery date.", zh:"合同明确规定了具体的交货日期。", s:["state","define","detail"], col:"specify the requirements / as specified", c:["学术难词"]},
   {w:"tolerate", uk:"/ˈtɒləreɪt/", us:"/ˈtɑːləreɪt/", d:"v. 容忍；忍受；容许", ex:"The school will not tolerate any form of bullying.", zh:"学校不容忍任何形式的欺凌。", s:["bear","accept","endure"], col:"tolerate differences / cannot tolerate", c:["学术难词"]},
   {w:"tremendous", uk:"/trəˈmendəs/", us:"/trəˈmendəs/", d:"adj. 巨大的；极好的", ex:"The internet has had a tremendous impact on education.", zh:"互联网对教育产生了巨大影响。", s:["enormous","huge","immense"], col:"tremendous impact / tremendous effort", c:["写作高分词"]},
-  {w:"vast", uk:"/vɑːst/", us:"/væst/", d:"adj. 巨大的；广阔的；大量的", ex:"The desert covers a vast area of the country.", zh:"这片沙漠覆盖了该国广袤的区域。", s:["enormous","immense","extensive"], col:"a vast amount of / vast areas", c:["阅读词汇"]}
+  {w:"vast", uk:"/vɑːst/", us:"/væst/", d:"adj. 巨大的；广阔的；大量的", ex:"The desert covers a vast area of the country.", zh:"这片沙漠覆盖了该国广袤的区域。", s:["enormous","immense","extensive"], col:"a vast amount of / vast areas", c:["阅读词汇"]},
+  
+  /* ============ 扩充词汇批1：听力/生活场景 ============ */
+  {w:"advisory", uk:"/ədˈvaɪzəri/", us:"/ədˈvaɪzəri/", d:"adj. 咨询的；顾问的", ex:"The advisory service helps students choose their courses.", zh:"咨询服务帮助学生选课。", s:["consultative","counselling"], col:"advisory service / advisory committee", c:["听力词汇"]},
+  {w:"agenda", uk:"/əˈdʒendə/", us:"/əˈdʒendə/", d:"n. 议程；议事日程", ex:"The first item on the agenda is the budget review.", zh:"议程第一项是预算审查。", s:["schedule","programme","itinerary"], col:"on the agenda / set the agenda", c:["听力词汇","口语高频词"]},
+  {w:"aisle", uk:"/aɪl/", us:"/aɪl/", d:"n. 过道；通道", ex:"Please keep the aisle clear during the flight.", zh:"飞行期间请保持过道畅通。", s:["corridor","passage","walkway"], col:"down the aisle / middle aisle", c:["听力词汇"]},
+  {w:"amenities", uk:"/əˈmiːnətiz/", us:"/əˈmenətiz/", d:"n. 设施；便利设施", ex:"The hostel offers basic amenities such as Wi-Fi and laundry.", zh:"这家旅舍提供Wi-Fi和洗衣等基本设施。", s:["facilities","services","conveniences"], col:"local amenities / modern amenities", c:["听力词汇","口语高频词"]},
+  {w:"announcement", uk:"/əˈnaʊnsmənt/", us:"/əˈnaʊnsmənt/", d:"n. 公告；宣布；通告", ex:"The teacher made an announcement about the exam schedule.", zh:"老师发布了关于考试安排的公告。", s:["notice","declaration","statement"], col:"make an announcement / public announcement", c:["听力词汇"]},
+  {w:"application", uk:"/ˌæplɪˈkeɪʃn/", us:"/ˌæplɪˈkeɪʃn/", d:"n. 申请；应用；申请表", ex:"You need to submit your application before the deadline.", zh:"你需要在截止日期前提交申请。", s:["request","form","use"], col:"application form / submit an application", c:["听力词汇","阅读词汇"]},
+  {w:"architect", uk:"/ˈɑːkɪtekt/", us:"/ˈɑːrkɪtekt/", d:"n. 建筑师；设计师", ex:"The architect designed a sustainable office building.", zh:"建筑师设计了一座可持续办公楼。", s:["designer","builder","planner"], col:"chief architect / landscape architect", c:["听力词汇","阅读词汇"]},
+  {w:"arrival", uk:"/əˈraɪvl/", us:"/əˈraɪvl/", d:"n. 到达；抵达；到来", ex:"Please wait for your luggage in the arrivals hall.", zh:"请在到达大厅等候行李。", s:["coming","entry","landing"], col:"on arrival / arrival time", c:["听力词汇"]},
+  {w:"assessment", uk:"/əˈsesmənt/", us:"/əˈsesmənt/", d:"n. 评估；评价；考核", ex:"The final assessment includes both written and oral exams.", zh:"最终评估包括笔试和口试。", s:["evaluation","appraisal","judgement"], col:"continuous assessment / risk assessment", c:["听力词汇","学术难词"]},
+  {w:"attendant", uk:"/əˈtendənt/", us:"/əˈtendənt/", d:"n. 服务员；乘务员", ex:"The flight attendant served drinks during the flight.", zh:"空乘在飞行中提供饮料。", s:["servant","assistant","staff"], col:"flight attendant / museum attendant", c:["听力词汇"]},
+  {w:"baggage", uk:"/ˈbæɡɪdʒ/", us:"/ˈbæɡɪdʒ/", d:"n. 行李", ex:"You can collect your baggage after passing through customs.", zh:"通关后你可以取行李。", s:["luggage","bags","suitcases"], col:"excess baggage / baggage claim", c:["听力词汇"]},
+  {w:"balcony", uk:"/ˈbælkəni/", us:"/ˈbælkəni/", d:"n. 阳台；楼厅", ex:"Our hotel room has a balcony with a sea view.", zh:"我们的酒店房间有一个海景阳台。", s:["terrace","veranda","gallery"], col:"private balcony / balcony seat", c:["听力词汇","口语高频词"]},
+  {w:"barcode", uk:"/ˈbɑːkəʊd/", us:"/ˈbɑːrkoʊd/", d:"n. 条形码", ex:"The cashier scanned the barcode on the product.", zh:"收银员扫描了产品上的条形码。", s:["bar code","QR code"], col:"scan a barcode / barcode reader", c:["听力词汇"]},
+  {w:"brochure", uk:"/ˈbrəʊʃə(r)/", us:"/broʊˈʃʊr/", d:"n. 小册子；宣传册", ex:"You can pick up a brochure at the tourist information centre.", zh:"你可以在旅游信息中心拿一本宣传册。", s:["leaflet","pamphlet","booklet"], col:"travel brochure / product brochure", c:["听力词汇","口语高频词"]},
+  {w:"buffet", uk:"/ˈbʊfeɪ/", us:"/bəˈfeɪ/", d:"n. 自助餐；自助餐台", ex:"The hotel offers a breakfast buffet every morning.", zh:"酒店每天早上提供自助早餐。", s:["smorgasbord","self-service"], col:"buffet dinner / all-you-can-eat buffet", c:["听力词汇","口语高频词"]},
+  {w:"cabinet", uk:"/ˈkæbɪnət/", us:"/ˈkæbɪnət/", d:"n. 橱柜；内阁", ex:"The kitchen has wooden cabinets for storage.", zh:"厨房有木质储物柜。", s:["cupboard","wardrobe","ministry"], col:"kitchen cabinet / cabinet meeting", c:["听力词汇"]},
+  {w:"calculator", uk:"/ˈkælkjuleɪtə(r)/", us:"/ˈkælkjuleɪtər/", d:"n. 计算器", ex:"You are not allowed to use a calculator in this exam.", zh:"这场考试不允许使用计算器。", s:["adding machine","computer"], col:"scientific calculator / pocket calculator", c:["听力词汇"]},
+  {w:"calendar", uk:"/ˈkælɪndə(r)/", us:"/ˈkælɪndər/", d:"n. 日历；日程表", ex:"Mark the exam date on your calendar.", zh:"把考试日期标在你的日历上。", s:["schedule","timetable","diary"], col:"academic calendar / wall calendar", c:["听力词汇","口语高频词"]},
+  {w:"carrier", uk:"/ˈkæriə(r)/", us:"/ˈkæriər/", d:"n. 承运人；运营商；载体", ex:"Which carrier are you flying with?", zh:"你乘坐哪家航空公司的航班？", s:["transporter","operator","company"], col:"mobile carrier / aircraft carrier", c:["听力词汇"]},
+  {w:"catalog", uk:"/ˈkætəlɒɡ/", us:"/ˈkætəlɔːɡ/", d:"n./v. 目录；编目", ex:"You can search the library catalog online.", zh:"你可以在线搜索图书馆目录。", s:["catalogue","list","index"], col:"library catalog / product catalog", c:["听力词汇","阅读词汇"]},
+  {w:"ceremony", uk:"/ˈserəməni/", us:"/ˈserəmoʊni/", d:"n. 典礼；仪式", ex:"The graduation ceremony will be held next Friday.", zh:"毕业典礼将于下周五举行。", s:["ritual","celebration","observance"], col:"opening ceremony / award ceremony", c:["听力词汇","口语高频词"]},
+  {w:"certificate", uk:"/səˈtɪfɪkət/", us:"/sərˈtɪfɪkət/", d:"n. 证书；证明", ex:"You will receive a certificate after completing the course.", zh:"完成课程后你将获得证书。", s:["diploma","credential","document"], col:"birth certificate / training certificate", c:["听力词汇","阅读词汇"]},
+  {w:"chamber", uk:"/ˈtʃeɪmbə(r)/", us:"/ˈtʃeɪmbər/", d:"n. 房间；室；会议厅", ex:"The bill was debated in the upper chamber.", zh:"该法案在上议院进行了辩论。", s:["room","hall","compartment"], col:"gas chamber / council chamber", c:["听力词汇","学术难词"]},
+  {w:"channel", uk:"/ˈtʃænl/", us:"/ˈtʃænl/", d:"n. 频道；渠道；海峡", ex:"Television is an important channel of communication.", zh:"电视是重要的沟通渠道。", s:["medium","route","waterway"], col:"communication channel / TV channel", c:["听力词汇","阅读词汇"]},
+  {w:"charity", uk:"/ˈtʃærəti/", us:"/ˈtʃærəti/", d:"n. 慈善；慈善机构", ex:"She donated money to an environmental charity.", zh:"她向一家环保慈善机构捐款。", s:["philanthropy","foundation","non-profit"], col:"charity event / raise money for charity", c:["听力词汇","口语高频词"]},
+  {w:"cheque", uk:"/tʃek/", us:"/tʃek/", d:"n. 支票", ex:"Please pay by cheque or bank transfer.", zh:"请用支票或银行转账付款。", s:["check","draft","money order"], col:"pay by cheque / blank cheque", c:["听力词汇"]},
+  {w:"circuit", uk:"/ˈsɜːkɪt/", us:"/ˈsɜːrkɪt/", d:"n. 电路；环道；巡回", ex:"The engineer traced the fault in the circuit.", zh:"工程师追踪了电路中的故障。", s:["loop","route","track"], col:"electric circuit / circuit board", c:["听力词汇","学术难词"]},
+  {w:"citation", uk:"/saɪˈteɪʃn/", us:"/saɪˈteɪʃn/", d:"n. 引用；引文；传票", ex:"Make sure you include a citation for every source you use.", zh:"确保你使用的每个来源都有引用。", s:["reference","quotation","mention"], col:"academic citation / citation index", c:["听力词汇","学术难词"]},
+  {w:"civil", uk:"/ˈsɪvl/", us:"/ˈsɪvl/", d:"adj. 公民的；民事的；文明的", ex:"Civil rights are protected by the constitution.", zh:"公民权利受宪法保护。", s:["public","municipal","polite"], col:"civil engineering / civil rights", c:["听力词汇","阅读词汇"]},
+  {w:"clerk", uk:"/klɑːk/", us:"/klɜːrk/", d:"n. 职员；店员；办事员", ex:"The bank clerk helped me open a new account.", zh:"银行职员帮我开了一个新账户。", s:["assistant","worker","employee"], col:"office clerk / hotel clerk", c:["听力词汇"]},
+  {w:"client", uk:"/ˈklaɪənt/", us:"/ˈklaɪənt/", d:"n. 客户；委托人", ex:"The lawyer met with her client to discuss the case.", zh:"律师与委托人会面讨论案件。", s:["customer","patron","consumer"], col:"regular client / client satisfaction", c:["听力词汇","阅读词汇"]},
+  {w:"climate", uk:"/ˈklaɪmət/", us:"/ˈklaɪmət/", d:"n. 气候；风气", ex:"Climate change is one of the biggest challenges today.", zh:"气候变化是当今最大的挑战之一。", s:["weather","atmosphere","environment"], col:"climate change / tropical climate", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"clinic", uk:"/ˈklɪnɪk/", us:"/ˈklɪnɪk/", d:"n. 诊所；门诊部", ex:"You can book an appointment at the student health clinic.", zh:"你可以在学生健康诊所预约。", s:["surgery","health centre","hospital"], col:"dental clinic / walk-in clinic", c:["听力词汇","口语高频词"]},
+  {w:"cluster", uk:"/ˈklʌstə(r)/", us:"/ˈklʌstər/", d:"n./v. 群；簇；聚集", ex:"A cluster of stars is visible in the night sky.", zh:"夜空中可见一簇星星。", s:["group","bunch","collection"], col:"cluster of / industry cluster", c:["听力词汇","学术难词"]},
+  {w:"coach", uk:"/kəʊtʃ/", us:"/koʊtʃ/", d:"n./v. 教练；长途汽车；辅导", ex:"The basketball coach trained the team every day.", zh:"篮球教练每天训练球队。", s:["trainer","instructor","bus"], col:"head coach / life coach", c:["听力词汇","口语高频词"]},
+  {w:"collar", uk:"/ˈkɒlə(r)/", us:"/ˈkɑːlər/", d:"n. 衣领；项圈", ex:"He wore a white shirt with a blue collar.", zh:"他穿了一件蓝领白衬衫。", s:["neckband","band"], col:"white-collar / blue-collar worker", c:["听力词汇"]},
+  {w:"column", uk:"/ˈkɒləm/", us:"/ˈkɑːləm/", d:"n. 柱；专栏；列", ex:"The newspaper has a weekly column on education.", zh:"这份报纸有一个每周教育专栏。", s:["pillar","post","article"], col:"spinal column / regular column", c:["听力词汇","阅读词汇"]},
+  {w:"combat", uk:"/ˈkɒmbæt/", us:"/ˈkɑːmbæt/", d:"n./v. 战斗；斗争；对付", ex:"The government launched a campaign to combat crime.", zh:"政府发起了打击犯罪的运动。", s:["fight","battle","struggle"], col:"combat terrorism / combat poverty", c:["听力词汇","写作高分词"]},
+  {w:"combination", uk:"/ˌkɒmbɪˈneɪʃn/", us:"/ˌkɑːmbɪˈneɪʃn/", d:"n. 结合；组合；联合", ex:"A combination of diet and exercise is best for health.", zh:"饮食和运动相结合对健康最好。", s:["mixture","blend","union"], col:"in combination with / a combination of", c:["听力词汇","阅读词汇"]},
+  {w:"commerce", uk:"/ˈkɒmɜːs/", us:"/ˈkɑːmɜːrs/", d:"n. 商业；贸易", ex:"E-commerce has transformed the way people shop.", zh:"电子商务改变了人们的购物方式。", s:["trade","business","merchandising"], col:"international commerce / e-commerce", c:["听力词汇","阅读词汇"]},
+  {w:"commission", uk:"/kəˈmɪʃn/", us:"/kəˈmɪʃn/", d:"n. 委员会；佣金；委托", ex:"She earns a commission on every sale she makes.", zh:"她每笔销售都赚取佣金。", s:["committee","fee","percentage"], col:"sales commission / European Commission", c:["听力词汇","阅读词汇"]},
+  {w:"commodity", uk:"/kəˈmɒdəti/", us:"/kəˈmɑːdəti/", d:"n. 商品；日用品；大宗商品", ex:"Oil is one of the world's most valuable commodities.", zh:"石油是世界上最有价值的大宗商品之一。", s:["product","goods","merchandise"], col:"commodity prices / agricultural commodity", c:["听力词汇","学术难词"]},
+  {w:"community", uk:"/kəˈmjuːnəti/", us:"/kəˈmjuːnəti/", d:"n. 社区；社会；群体", ex:"The local community raised money for the new library.", zh:"当地社区为新图书馆筹款。", s:["society","neighbourhood","group"], col:"local community / community centre", c:["听力词汇","口语高频词","写作高分词"]},
+  {w:"companion", uk:"/kəmˈpæniən/", us:"/kəmˈpæniən/", d:"n. 同伴；伴侣", ex:"A dog can be a wonderful companion for elderly people.", zh:"狗可以成为老年人的好伴侣。", s:["partner","friend","associate"], col:"travel companion / lifelong companion", c:["听力词汇","口语高频词"]},
+  {w:"comparable", uk:"/ˈkɒmpərəbl/", us:"/ˈkɑːmpərəbl/", d:"adj. 可比较的；类似的", ex:"The results were comparable to those of previous studies.", zh:"结果与之前的研究相当。", s:["similar","equivalent","analogous"], col:"comparable to / comparable prices", c:["听力词汇","学术难词"]},
+  {w:"comparison", uk:"/kəmˈpærɪsn/", us:"/kəmˈpærɪsn/", d:"n. 比较；对比", ex:"A comparison of the two methods shows clear differences.", zh:"两种方法的比较显示出明显差异。", s:["contrast","evaluation","analysis"], col:"in comparison with / make a comparison", c:["听力词汇","阅读词汇"]},
+  {w:"compensation", uk:"/ˌkɒmpenˈseɪʃn/", us:"/ˌkɑːmpenˈseɪʃn/", d:"n. 补偿；赔偿；报酬", ex:"The company offered compensation to the affected customers.", zh:"公司向受影响的客户提供了赔偿。", s:["recompense","payment","reparation"], col:"compensation for / claim compensation", c:["听力词汇","阅读词汇"]},
+  {w:"compete", uk:"/kəmˈpiːt/", us:"/kəmˈpiːt/", d:"v. 竞争；比赛", ex:"Several companies compete for the same market share.", zh:"几家公司争夺相同的市场份额。", s:["contend","rival","vie"], col:"compete with / compete for", c:["听力词汇","阅读词汇"]},
+  {w:"competent", uk:"/ˈkɒmpɪtənt/", us:"/ˈkɑːmpɪtənt/", d:"adj. 有能力的；胜任的", ex:"She is a competent teacher who always prepares well.", zh:"她是一位胜任的老师，总是备课充分。", s:["capable","qualified","skilled"], col:"competent in / highly competent", c:["听力词汇","口语高频词"]},
+  {w:"competition", uk:"/ˌkɒmpəˈtɪʃn/", us:"/ˌkɑːmpəˈtɪʃn/", d:"n. 竞争；比赛", ex:"Competition between universities has increased in recent years.", zh:"近年来大学之间的竞争加剧了。", s:["contest","rivalry","tournament"], col:"fierce competition / in competition with", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"competitor", uk:"/kəmˈpetɪtə(r)/", us:"/kəmˈpetɪtər/", d:"n. 竞争者；对手", ex:"Our main competitor launched a new product last month.", zh:"我们的主要竞争对手上个月推出了新产品。", s:["rival","opponent","contender"], col:"major competitor / direct competitor", c:["听力词汇","阅读词汇"]},
+  {w:"complaint", uk:"/kəmˈpleɪnt/", us:"/kəmˈpleɪnt/", d:"n. 投诉；抱怨；疾病", ex:"The customer made a complaint about the poor service.", zh:"顾客对糟糕的服务提出了投诉。", s:["protest","grievance","objection"], col:"make a complaint / formal complaint", c:["听力词汇","口语高频词"]},
+  {w:"complex", uk:"/ˈkɒmpleks/", us:"/kəmˈpleks/", d:"adj. 复杂的；复合的", ex:"The issue is more complex than it first appears.", zh:"这个问题比初看起来更复杂。", s:["complicated","intricate","involved"], col:"complex system / complex issue", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"component", uk:"/kəmˈpəʊnənt/", us:"/kəmˈpoʊnənt/", d:"n. 组成部分；组件", ex:"Each component of the machine must be checked regularly.", zh:"机器的每个组件都必须定期检查。", s:["part","element","piece"], col:"key component / component of", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"compose", uk:"/kəmˈpəʊz/", us:"/kəmˈpoʊz/", d:"v. 组成；创作；使镇静", ex:"Water is composed of hydrogen and oxygen.", zh:"水由氢和氧组成。", s:["constitute","make up","create"], col:"be composed of / compose music", c:["听力词汇","学术难词"]},
+  {w:"composition", uk:"/ˌkɒmpəˈzɪʃn/", us:"/ˌkɑːmpəˈzɪʃn/", d:"n. 组成；作文；作品", ex:"The chemical composition of the soil was analysed.", zh:"分析了土壤的化学成分。", s:["makeup","structure","essay"], col:"chemical composition / composition of", c:["听力词汇","阅读词汇"]},
+  {w:"compound", uk:"/ˈkɒmpaʊnd/", us:"/ˈkɑːmpaʊnd/", d:"n./adj. 化合物；复合的", ex:"The scientist discovered a new chemical compound.", zh:"科学家发现了一种新的化合物。", s:["mixture","combination","substance"], col:"organic compound / compound interest", c:["听力词汇","学术难词"]},
+  {w:"comprehension", uk:"/ˌkɒmprɪˈhenʃn/", us:"/ˌkɑːmprɪˈhenʃn/", d:"n. 理解；理解力", ex:"Reading comprehension is an important part of the IELTS exam.", zh:"阅读理解是雅思考试的重要部分。", s:["understanding","grasp","perception"], col:"reading comprehension / listening comprehension", c:["听力词汇","阅读词汇"]},
+  {w:"comprehensive", uk:"/ˌkɒmprɪˈhensɪv/", us:"/ˌkɑːmprɪˈhensɪv/", d:"adj. 全面的；综合的", ex:"The report provides a comprehensive analysis of the problem.", zh:"报告对问题进行了全面分析。", s:["thorough","complete","extensive"], col:"comprehensive review / comprehensive plan", c:["听力词汇","阅读词汇","写作高分词","学术难词"]},
+  {w:"comprise", uk:"/kəmˈpraɪz/", us:"/kəmˈpraɪz/", d:"v. 包含；由…组成", ex:"The committee comprises representatives from all departments.", zh:"委员会由各部门代表组成。", s:["include","consist of","contain"], col:"comprise of / be comprised of", c:["听力词汇","学术难词","写作高分词"]},
+  {w:"compromise", uk:"/ˈkɒmprəmaɪz/", us:"/ˈkɑːmprəmaɪz/", d:"n./v. 妥协；折中；危及", ex:"Both sides reached a compromise after long negotiations.", zh:"经过长期谈判，双方达成了妥协。", s:["agreement","settlement","concession"], col:"reach a compromise / compromise on", c:["听力词汇","口语高频词","写作高分词"]},
+  {w:"compulsory", uk:"/kəmˈpʌlsəri/", us:"/kəmˈpʌlsəri/", d:"adj. 强制的；义务的", ex:"Attendance at all lectures is compulsory for first-year students.", zh:"一年级学生必须参加所有讲座。", s:["mandatory","obligatory","required"], col:"compulsory education / compulsory subject", c:["听力词汇","学术难词"]},
+  {w:"compute", uk:"/kəmˈpjuːt/", us:"/kəmˈpjuːt/", d:"v. 计算；估算", ex:"The software can compute the results in seconds.", zh:"软件可以在几秒钟内计算出结果。", s:["calculate","work out","estimate"], col:"compute the average / compute data", c:["听力词汇","学术难词"]},
+  {w:"conceal", uk:"/kənˈsiːl/", us:"/kənˈsiːl/", d:"v. 隐藏；隐瞒", ex:"He tried to conceal his disappointment during the interview.", zh:"他在面试中试图掩饰失望。", s:["hide","cover up","mask"], col:"conceal the truth / conceal from", c:["听力词汇","学术难词"]},
+  {w:"concede", uk:"/kənˈsiːd/", us:"/kənˈsiːd/", d:"v. 承认；让步；认输", ex:"The company conceded that the product had safety issues.", zh:"公司承认该产品存在安全问题。", s:["admit","acknowledge","yield"], col:"concede defeat / concede that", c:["听力词汇","学术难词"]},
+  {w:"concentrate", uk:"/ˈkɒnsntreɪt/", us:"/ˈkɑːnsntreɪt/", d:"v. 集中；专心；浓缩", ex:"I find it hard to concentrate in a noisy environment.", zh:"我发现在嘈杂环境中很难集中注意力。", s:["focus","pay attention","centre"], col:"concentrate on / concentrate efforts", c:["听力词汇","口语高频词"]},
+  {w:"concern", uk:"/kənˈsɜːn/", us:"/kənˈsɜːrn/", d:"n./v. 关心；担忧；涉及", ex:"Environmental protection is a major concern for young people.", zh:"环境保护是年轻人的主要关注点。", s:["worry","anxiety","interest"], col:"concern about / raise concerns", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"conclude", uk:"/kənˈkluːd/", us:"/kənˈkluːd/", d:"v. 得出结论；结束；推断", ex:"The study concludes that exercise improves mental health.", zh:"研究得出结论，运动改善心理健康。", s:["finish","end","infer"], col:"conclude that / conclude from", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"conclusion", uk:"/kənˈkluːʒn/", us:"/kənˈkluːʒn/", d:"n. 结论；结束", ex:"In conclusion, the benefits outweigh the drawbacks.", zh:"总之，利大于弊。", s:["ending","result","summary"], col:"in conclusion / reach a conclusion", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"concrete", uk:"/ˈkɒŋkriːt/", us:"/ˈkɑːnkriːt/", d:"adj./n. 具体的；混凝土", ex:"We need concrete evidence to support this theory.", zh:"我们需要具体证据来支持这个理论。", s:["specific","definite","tangible"], col:"concrete example / concrete evidence", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"condition", uk:"/kənˈdɪʃn/", us:"/kənˈdɪʃn/", d:"n. 条件；状况；环境", ex:"The working conditions in the factory were poor.", zh:"工厂的工作条件很差。", s:["state","situation","circumstance"], col:"on condition that / working conditions", c:["听力词汇","阅读词汇"]},
+  {w:"conduct", uk:"/kənˈdʌkt/", us:"/kənˈdʌkt/", d:"v./n. 进行；实施；行为", ex:"The research was conducted over a period of two years.", zh:"这项研究进行了两年。", s:["carry out","perform","behaviour"], col:"conduct research / conduct an experiment", c:["听力词汇","阅读词汇","学术难词","写作高分词"]},
+  {w:"conference", uk:"/ˈkɒnfərəns/", us:"/ˈkɑːnfərəns/", d:"n. 会议；研讨会", ex:"The international conference will be held in London next month.", zh:"国际会议将于下月在伦敦举行。", s:["meeting","summit","convention"], col:"press conference / attend a conference", c:["听力词汇","口语高频词"]},
+  {w:"confidence", uk:"/ˈkɒnfɪdəns/", us:"/ˈkɑːnfɪdəns/", d:"n. 信心；信任；机密", ex:"She gained confidence after giving several presentations.", zh:"做了几次演讲后，她获得了信心。", s:["trust","belief","assurance"], col:"have confidence in / build confidence", c:["听力词汇","口语高频词"]},
+  {w:"confirm", uk:"/kənˈfɜːm/", us:"/kənˈfɜːrm/", d:"v. 确认；证实；批准", ex:"Please confirm your attendance by replying to this email.", zh:"请回复此邮件确认您的出席。", s:["verify","prove","validate"], col:"confirm booking / confirm that", c:["听力词汇","口语高频词"]},
+  {w:"conflict", uk:"/ˈkɒnflɪkt/", us:"/ˈkɑːnflɪkt/", d:"n./v. 冲突；矛盾；斗争", ex:"There is a conflict between economic growth and environmental protection.", zh:"经济增长与环境保护之间存在冲突。", s:["clash","dispute","struggle"], col:"conflict of interest / in conflict with", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"conform", uk:"/kənˈfɔːm/", us:"/kənˈfɔːrm/", d:"v. 遵守；符合；顺应", ex:"All products must conform to safety standards.", zh:"所有产品必须符合安全标准。", s:["comply","abide by","follow"], col:"conform to / conform with", c:["听力词汇","学术难词"]},
+  {w:"confront", uk:"/kənˈfrʌnt/", us:"/kənˈfrʌnt/", d:"v. 面对；对抗；遭遇", ex:"We must confront the problem rather than ignore it.", zh:"我们必须面对问题，而不是忽视它。", s:["face","tackle","challenge"], col:"confront the issue / be confronted with", c:["听力词汇","写作高分词","学术难词"]},
+  {w:"confuse", uk:"/kənˈfjuːz/", us:"/kənˈfjuːz/", d:"v. 使困惑；混淆", ex:"The instructions were so complicated that they confused everyone.", zh:"说明太复杂，把所有人都搞糊涂了。", s:["puzzle","bewilder","mix up"], col:"confuse A with B / easily confused", c:["听力词汇","口语高频词"]},
+  {w:"confusion", uk:"/kənˈfjuːʒn/", us:"/kənˈfjuːʒn/", d:"n. 困惑；混乱；混淆", ex:"There was confusion about the time of the meeting.", zh:"关于会议时间存在混乱。", s:["chaos","disorder","puzzlement"], col:"in confusion / cause confusion", c:["听力词汇","阅读词汇"]},
+  {w:"congress", uk:"/ˈkɒŋɡres/", us:"/ˈkɑːŋɡrəs/", d:"n. 国会；代表大会", ex:"The bill was approved by Congress last week.", zh:"该法案上周获得国会批准。", s:["parliament","assembly","legislature"], col:"US Congress / party congress", c:["听力词汇","阅读词汇"]},
+  {w:"connection", uk:"/kəˈnekʃn/", us:"/kəˈnekʃn/", d:"n. 连接；联系；关系", ex:"There is a strong connection between smoking and lung cancer.", zh:"吸烟与肺癌之间有密切联系。", s:["link","relation","association"], col:"in connection with / establish a connection", c:["听力词汇","阅读词汇"]},
+  {w:"conscience", uk:"/ˈkɒnʃəns/", us:"/ˈkɑːnʃəns/", d:"n. 良心；良知", ex:"He couldn't lie because his conscience troubled him.", zh:"他不能撒谎，因为良心不安。", s:["morals","ethics","principles"], col:"guilty conscience / clear conscience", c:["听力词汇","学术难词"]},
+  {w:"conscious", uk:"/ˈkɒnʃəs/", us:"/ˈkɑːnʃəs/", d:"adj. 有意识的；清醒的；自觉的", ex:"She was conscious of the importance of time management.", zh:"她意识到时间管理的重要性。", s:["aware","awake","mindful"], col:"conscious of / environmentally conscious", c:["听力词汇","阅读词汇"]},
+  {w:"consensus", uk:"/kənˈsensəs/", us:"/kənˈsensəs/", d:"n. 共识；一致意见", ex:"The committee reached a consensus on the new policy.", zh:"委员会就新政策达成了共识。", s:["agreement","unanimity","accord"], col:"reach a consensus / general consensus", c:["听力词汇","写作高分词","学术难词"]},
+  {w:"consent", uk:"/kənˈsent/", us:"/kənˈsent/", d:"n./v. 同意；许可", ex:"You need parental consent before taking part in the study.", zh:"参加研究前需要获得父母同意。", s:["agreement","permission","approval"], col:"with the consent of / give consent", c:["听力词汇","学术难词"]},
+  {w:"consequence", uk:"/ˈkɒnsɪkwəns/", us:"/ˈkɑːnsəkwens/", d:"n. 结果；后果；重要性", ex:"The consequences of climate change are already visible.", zh:"气候变化的后果已经显现。", s:["result","outcome","effect"], col:"as a consequence of / serious consequences", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"consequently", uk:"/ˈkɒnsɪkwəntli/", us:"/ˈkɑːnsəkwentli/", d:"adv. 因此；所以", ex:"He missed the deadline and consequently failed the course.", zh:"他错过了截止日期，因此课程不及格。", s:["therefore","thus","as a result"], col:"consequently, ... / and consequently", c:["听力词汇","写作高分词","学术难词"]},
+  {w:"conservation", uk:"/ˌkɒnsəˈveɪʃn/", us:"/ˌkɑːnsərˈveɪʃn/", d:"n. 保护；保存；节约", ex:"Wildlife conservation is essential for maintaining biodiversity.", zh:"野生动物保护对维持生物多样性至关重要。", s:["protection","preservation","safeguarding"], col:"energy conservation / conservation area", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"conservative", uk:"/kənˈsɜːvətɪv/", us:"/kənˈsɜːrvətɪv/", d:"adj. 保守的；传统的", ex:"Older generations tend to be more conservative in their views.", zh:"老一辈人的观点往往更保守。", s:["traditional","cautious","moderate"], col:"conservative estimate / conservative approach", c:["听力词汇","阅读词汇"]},
+  {w:"consider", uk:"/kənˈsɪdə(r)/", us:"/kənˈsɪdər/", d:"v. 考虑；认为；顾及", ex:"You should consider all the options before making a decision.", zh:"做决定前你应该考虑所有选项。", s:["think about","contemplate","regard"], col:"consider doing / consider as", c:["听力词汇","阅读词汇","口语高频词"]},
+  {w:"considerable", uk:"/kənˈsɪdərəbl/", us:"/kənˈsɪdərəbl/", d:"adj. 相当大的；重要的", ex:"The project requires a considerable amount of funding.", zh:"该项目需要大量资金。", s:["significant","substantial","sizeable"], col:"considerable amount / considerable progress", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"consideration", uk:"/kənˌsɪdəˈreɪʃn/", us:"/kənˌsɪdəˈreɪʃn/", d:"n. 考虑；顾及；报酬", ex:"Safety is the most important consideration in this design.", zh:"安全是这个设计中最重要的考虑因素。", s:["thought","deliberation","regard"], col:"take into consideration / under consideration", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"consist", uk:"/kənˈsɪst/", us:"/kənˈsɪst/", d:"v. 由…组成；在于", ex:"The team consists of five members from different countries.", zh:"团队由来自不同国家的五名成员组成。", s:["comprise","be made of","compose"], col:"consist of / consist in", c:["听力词汇","阅读词汇"]},
+  {w:"consistent", uk:"/kənˈsɪstənt/", us:"/kənˈsɪstənt/", d:"adj. 一致的；始终如一的", ex:"Her performance has been consistently excellent throughout the year.", zh:"她全年的表现始终出色。", s:["steady","uniform","regular"], col:"consistent with / consistent performance", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"constant", uk:"/ˈkɒnstənt/", us:"/ˈkɑːnstənt/", d:"adj. 不断的；恒定的", ex:"The constant noise from the construction site was annoying.", zh:"建筑工地持续不断的噪音很烦人。", s:["continuous","incessant","steady"], col:"constant change / constant pressure", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"constitute", uk:"/ˈkɒnstɪtjuːt/", us:"/ˈkɑːnstətuːt/", d:"v. 构成；组成；设立", ex:"Women constitute nearly half of the workforce.", zh:"女性占劳动力的近一半。", s:["compose","make up","form"], col:"constitute a threat / constitute the majority", c:["听力词汇","学术难词","写作高分词"]},
+  {w:"constitution", uk:"/ˌkɒnstɪˈtjuːʃn/", us:"/ˌkɑːnstəˈtuːʃn/", d:"n. 宪法；章程；体质", ex:"The constitution guarantees freedom of speech.", zh:"宪法保障言论自由。", s:["charter","law","framework"], col:"written constitution / violate the constitution", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"construct", uk:"/kənˈstrʌkt/", us:"/kənˈstrʌkt/", d:"v. 建造；构建；创立", ex:"The bridge was constructed in just two years.", zh:"这座桥仅用两年就建成了。", s:["build","erect","create"], col:"construct a building / construct an argument", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"consult", uk:"/kənˈsʌlt/", us:"/kənˈsʌlt/", d:"v. 咨询；请教；查阅", ex:"You should consult a doctor if the pain persists.", zh:"如果疼痛持续，你应该咨询医生。", s:["ask","seek advice","refer to"], col:"consult a specialist / consult with", c:["听力词汇","口语高频词"]},
+  {w:"consultant", uk:"/kənˈsʌltənt/", us:"/kənˈsʌltənt/", d:"n. 顾问；咨询专家", ex:"The company hired a marketing consultant to improve sales.", zh:"公司聘请了营销顾问来提高销售额。", s:["advisor","expert","specialist"], col:"management consultant / independent consultant", c:["听力词汇","阅读词汇"]},
+  {w:"consume", uk:"/kənˈsjuːm/", us:"/kənˈsuːm/", d:"v. 消耗；消费；吃", ex:"The average household consumes too much energy.", zh:"普通家庭消耗太多能源。", s:["use","utilize","eat"], col:"consume energy / consume resources", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"consumption", uk:"/kənˈsʌmpʃn/", us:"/kənˈsʌmpʃn/", d:"n. 消费；消耗；消费量", ex:"Meat consumption has increased significantly in developing countries.", zh:"发展中国家的肉类消费量显著增加。", s:["use","utilization","intake"], col:"energy consumption / food consumption", c:["听力词汇","阅读词汇","写作高分词","学术难词"]},
+  {w:"contact", uk:"/ˈkɒntækt/", us:"/ˈkɑːntækt/", d:"n./v. 联系；接触；交往", ex:"Please contact us if you have any questions.", zh:"如有任何问题，请联系我们。", s:["get in touch","reach","communicate"], col:"contact details / in contact with", c:["听力词汇","口语高频词"]},
+  {w:"contain", uk:"/kənˈteɪn/", us:"/kənˈteɪn/", d:"v. 包含；容纳；控制", ex:"This book contains useful tips for IELTS preparation.", zh:"这本书包含雅思备考的有用技巧。", s:["include","hold","comprise"], col:"contain information / contain water", c:["听力词汇","阅读词汇"]},
+  {w:"contemporary", uk:"/kənˈtemprəri/", us:"/kənˈtempəreri/", d:"adj. 当代的；同时代的", ex:"Contemporary art often challenges traditional values.", zh:"当代艺术常常挑战传统价值观。", s:["modern","current","present-day"], col:"contemporary society / contemporary art", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"content", uk:"/ˈkɒntent/", us:"/ˈkɑːntent/", d:"n. 内容；目录；满足", ex:"The content of the course covers both theory and practice.", zh:"课程内容涵盖理论和实践。", s:["substance","matter","subject"], col:"course content / content analysis", c:["听力词汇","阅读词汇"]},
+  {w:"contest", uk:"/ˈkɒntest/", us:"/ˈkɑːntest/", d:"n./v. 比赛；竞赛；争夺", ex:"She won first prize in the national writing contest.", zh:"她在全国写作比赛中获得一等奖。", s:["competition","tournament","challenge"], col:"beauty contest / contest for", c:["听力词汇","口语高频词"]},
+  {w:"context", uk:"/ˈkɒntekst/", us:"/ˈkɑːntekst/", d:"n. 上下文；背景；环境", ex:"You need to understand the historical context of the novel.", zh:"你需要理解小说的历史背景。", s:["background","setting","circumstance"], col:"in context / out of context", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"continue", uk:"/kənˈtɪnjuː/", us:"/kənˈtɪnjuː/", d:"v. 继续；持续", ex:"The rain continued for three days without stopping.", zh:"雨连续下了三天没有停。", s:["carry on","persist","proceed"], col:"continue to do / continue doing", c:["听力词汇","口语高频词"]},
+  {w:"continuous", uk:"/kənˈtɪnjuəs/", us:"/kənˈtɪnjuəs/", d:"adj. 连续的；持续的", ex:"Continuous improvement is essential for success.", zh:"持续改进对成功至关重要。", s:["constant","uninterrupted","ongoing"], col:"continuous learning / continuous process", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"contract", uk:"/ˈkɒntrækt/", us:"/ˈkɑːntrækt/", d:"n./v. 合同；契约；收缩", ex:"Before signing the contract, read it carefully.", zh:"签合同前请仔细阅读。", s:["agreement","deal","compact"], col:"sign a contract / breach of contract", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"contradict", uk:"/ˌkɒntrəˈdɪkt/", us:"/ˌkɑːntrəˈdɪkt/", d:"v. 反驳；与…矛盾", ex:"His actions contradict his words.", zh:"他的言行不一致。", s:["oppose","deny","conflict with"], col:"contradict each other / contradict a statement", c:["听力词汇","学术难词"]},
+  {w:"contradiction", uk:"/ˌkɒntrəˈdɪkʃn/", us:"/ˌkɑːntrəˈdɪkʃn/", d:"n. 矛盾；不一致", ex:"There is a contradiction between his theory and the evidence.", zh:"他的理论与证据之间存在矛盾。", s:["conflict","inconsistency","paradox"], col:"in contradiction to / apparent contradiction", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"contrary", uk:"/ˈkɒntrəri/", us:"/ˈkɑːntreri/", d:"adj./n. 相反的；反面", ex:"Contrary to popular belief, cats can be very affectionate.", zh:"与普遍看法相反，猫可以非常深情。", s:["opposite","reverse","conflicting"], col:"on the contrary / contrary to", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"contrast", uk:"/ˈkɒntrɑːst/", us:"/ˈkɑːntræst/", d:"n./v. 对比；对照；差异", ex:"There is a stark contrast between the rich and the poor.", zh:"贫富之间存在鲜明对比。", s:["difference","comparison","distinction"], col:"in contrast to / by contrast", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"contribute", uk:"/kənˈtrɪbjuːt/", us:"/kənˈtrɪbjuːt/", d:"v. 贡献；促成；投稿", ex:"Regular exercise contributes to better health.", zh:"经常运动有助于健康。", s:["donate","give","add"], col:"contribute to / contribute towards", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"contribution", uk:"/ˌkɒntrɪˈbjuːʃn/", us:"/ˌkɑːntrəˈbjuːʃn/", d:"n. 贡献；捐款；投稿", ex:"Her contribution to the project was invaluable.", zh:"她对项目的贡献是无价的。", s:["donation","input","gift"], col:"make a contribution / contribution to", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"control", uk:"/kənˈtrəʊl/", us:"/kənˈtroʊl/", d:"v./n. 控制；管理；支配", ex:"The government introduced measures to control inflation.", zh:"政府采取措施控制通货膨胀。", s:["manage","regulate","command"], col:"take control of / under control", c:["听力词汇","阅读词汇"]},
+  {w:"controversial", uk:"/ˌkɒntrəˈvɜːʃl/", us:"/ˌkɑːntrəˈvɜːrʃl/", d:"adj. 有争议的；引起争论的", ex:"The new policy has been highly controversial.", zh:"新政策极具争议。", s:["disputed","contentious","debatable"], col:"controversial issue / controversial topic", c:["听力词汇","阅读词汇","写作高分词","学术难词"]},
+  {w:"controversy", uk:"/ˈkɒntrəvɜːsi/", us:"/ˈkɑːntrəvɜːrsi/", d:"n. 争论；争议", ex:"The decision caused a lot of controversy among students.", zh:"这个决定在学生中引起了很多争议。", s:["dispute","argument","debate"], col:"cause controversy / amid controversy", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"convenience", uk:"/kənˈviːniəns/", us:"/kənˈviːniəns/", d:"n. 便利；方便；便利设施", ex:"Online shopping offers great convenience to consumers.", zh:"网购为消费者提供了极大便利。", s:["ease","comfort","utility"], col:"for convenience / at your convenience", c:["听力词汇","口语高频词"]},
+  {w:"convenient", uk:"/kənˈviːniənt/", us:"/kənˈviːniənt/", d:"adj. 方便的；便利的", ex:"The location is very convenient for public transport.", zh:"这个位置乘坐公共交通非常方便。", s:["handy","accessible","suitable"], col:"convenient for / convenient time", c:["听力词汇","口语高频词"]},
+  {w:"convention", uk:"/kənˈvenʃn/", us:"/kənˈvenʃn/", d:"n. 惯例；大会；公约", ex:"It is a social convention to shake hands when meeting someone.", zh:"见面握手是一种社会惯例。", s:["custom","tradition","meeting"], col:"by convention / international convention", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"conventional", uk:"/kənˈvenʃənl/", us:"/kənˈvenʃənl/", d:"adj. 传统的；常规的", ex:"Conventional farming methods use a lot of pesticides.", zh:"传统耕作方法使用大量农药。", s:["traditional","standard","ordinary"], col:"conventional method / conventional wisdom", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"conversation", uk:"/ˌkɒnvəˈseɪʃn/", us:"/ˌkɑːnvərˈseɪʃn/", d:"n. 谈话；对话", ex:"I had an interesting conversation with my professor yesterday.", zh:"昨天我和教授进行了一次有趣的谈话。", s:["talk","discussion","chat"], col:"have a conversation / in conversation with", c:["听力词汇","口语高频词"]},
+  {w:"convert", uk:"/kənˈvɜːt/", us:"/kənˈvɜːrt/", d:"v. 转换；转变；皈依", ex:"You can convert the file from PDF to Word format.", zh:"你可以将文件从PDF转换为Word格式。", s:["change","transform","adapt"], col:"convert into / convert to", c:["听力词汇","阅读词汇"]},
+  {w:"convey", uk:"/kənˈveɪ/", us:"/kənˈveɪ/", d:"v. 传达；表达；运输", ex:"It is difficult to convey emotions in writing.", zh:"在写作中传达情感很困难。", s:["communicate","express","transmit"], col:"convey a message / convey meaning", c:["听力词汇","写作高分词","学术难词"]},
+  {w:"convince", uk:"/kənˈvɪns/", us:"/kənˈvɪns/", d:"v. 说服；使确信", ex:"She convinced me to join the study group.", zh:"她说服我加入学习小组。", s:["persuade","assure","win over"], col:"convince sb to do / convince sb of", c:["听力词汇","口语高频词"]},
+  {w:"cooperate", uk:"/kəʊˈɒpəreɪt/", us:"/koʊˈɑːpəreɪt/", d:"v. 合作；协作；配合", ex:"The two companies agreed to cooperate on the project.", zh:"两家公司同意在该项目上合作。", s:["collaborate","work together","team up"], col:"cooperate with / cooperate on", c:["听力词汇","口语高频词","写作高分词"]},
+  {w:"coordinate", uk:"/kəʊˈɔːdɪneɪt/", us:"/koʊˈɔːrdɪneɪt/", d:"v. 协调；配合；使协调", ex:"We need to coordinate our efforts to finish on time.", zh:"我们需要协调努力以按时完成。", s:["organize","harmonize","synchronize"], col:"coordinate with / coordinate activities", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"cope", uk:"/kəʊp/", us:"/koʊp/", d:"v. 应对；处理；对付", ex:"Many students struggle to cope with exam stress.", zh:"许多学生难以应对考试压力。", s:["manage","deal with","handle"], col:"cope with / cope up", c:["听力词汇","口语高频词","写作高分词"]},
+  
+  {w:"core", uk:"/kɔː(r)/", us:"/kɔːr/", d:"n./adj. 核心；核心的", ex:"The core of the problem is lack of communication.", zh:"问题的核心是缺乏沟通。", s:["centre","heart","essence"], col:"core issue / core values", c:["听力词汇","阅读词汇","写作高分词","学术难词"]},
+  {w:"corporation", uk:"/ˌkɔːpəˈreɪʃn/", us:"/ˌkɔːrpəˈreɪʃn/", d:"n. 公司；法人团体", ex:"The multinational corporation has offices in over 50 countries.", zh:"这家跨国公司在50多个国家设有办事处。", s:["company","firm","enterprise"], col:"multinational corporation / public corporation", c:["听力词汇","阅读词汇"]},
+  {w:"correct", uk:"/kəˈrekt/", us:"/kəˈrekt/", d:"adj./v. 正确的；改正", ex:"Please correct any mistakes in your essay before submitting.", zh:"提交前请改正论文中的任何错误。", s:["right","accurate","fix"], col:"correct answer / correct the mistake", c:["听力词汇","口语高频词"]},
+  {w:"correspond", uk:"/ˌkɒrəˈspɒnd/", us:"/ˌkɔːrəˈspɑːnd/", d:"v. 符合；对应；通信", ex:"The results correspond with our earlier findings.", zh:"结果与我们之前的发现一致。", s:["match","agree","communicate"], col:"correspond to / correspond with", c:["听力词汇","学术难词"]},
+  {w:"correspondence", uk:"/ˌkɒrəˈspɒndəns/", us:"/ˌkɔːrəˈspɑːndəns/", d:"n. 通信；信件；一致", ex:"All correspondence must be kept confidential.", zh:"所有通信必须保密。", s:["letters","mail","communication"], col:"business correspondence / in correspondence with", c:["听力词汇","学术难词"]},
+  {w:"corridor", uk:"/ˈkɒrɪdɔː(r)/", us:"/ˈkɔːrɪdɔːr/", d:"n. 走廊；通道", ex:"The classroom is at the end of the corridor.", zh:"教室在走廊尽头。", s:["hallway","passage","gallery"], col:"along the corridor / narrow corridor", c:["听力词汇"]},
+  {w:"cost", uk:"/kɒst/", us:"/kɔːst/", d:"n./v. 成本；费用；花费", ex:"The cost of living has increased significantly this year.", zh:"今年生活成本显著增加。", s:["price","expense","charge"], col:"at the cost of / reduce costs", c:["听力词汇","阅读词汇"]},
+  {w:"cottage", uk:"/ˈkɒtɪdʒ/", us:"/ˈkɑːtɪdʒ/", d:"n. 小屋；村舍", ex:"They rented a cottage in the countryside for the summer.", zh:"他们在乡下租了一间小屋过夏天。", s:["cabin","hut","house"], col:"holiday cottage / thatched cottage", c:["听力词汇","口语高频词"]},
+  {w:"cotton", uk:"/ˈkɒtn/", us:"/ˈkɑːtn/", d:"n. 棉花；棉", ex:"This shirt is made of one hundred percent cotton.", zh:"这件衬衫是百分之百纯棉的。", s:["fabric","textile"], col:"cotton clothes / cotton industry", c:["听力词汇"]},
+  {w:"cough", uk:"/kɒf/", us:"/kɔːf/", d:"n./v. 咳嗽", ex:"She has had a bad cough for over a week.", zh:"她咳嗽了一个多星期。", s:["hack","wheeze"], col:"dry cough / cough syrup", c:["听力词汇","口语高频词"]},
+  {w:"council", uk:"/ˈkaʊnsl/", us:"/ˈkaʊnsl/", d:"n. 委员会；议会；市政厅", ex:"The local council approved the building plan.", zh:"地方委员会批准了建筑计划。", s:["committee","assembly","board"], col:"city council / student council", c:["听力词汇","阅读词汇"]},
+  {w:"counsel", uk:"/ˈkaʊnsl/", us:"/ˈkaʊnsl/", d:"n./v. 忠告；法律顾问；建议", ex:"She sought legal counsel before signing the contract.", zh:"签合同前她寻求了法律顾问。", s:["advice","guidance","attorney"], col:"take counsel / counsel sb on", c:["听力词汇","学术难词"]},
+  {w:"count", uk:"/kaʊnt/", us:"/kaʊnt/", d:"v./n. 数；计算；重要", ex:"Every vote counts in an election.", zh:"选举中每一票都很重要。", s:["calculate","number","matter"], col:"count on / count as", c:["听力词汇","口语高频词"]},
+  {w:"counter", uk:"/ˈkaʊntə(r)/", us:"/ˈkaʊntər/", d:"n. 柜台；计数器；相反", ex:"Please pay at the counter before leaving.", zh:"离开前请到柜台付款。", s:["desk","bar","opposite"], col:"service counter / over the counter", c:["听力词汇"]},
+  {w:"country", uk:"/ˈkʌntri/", us:"/ˈkʌntri/", d:"n. 国家；乡村", ex:"Many young people move from the country to cities for work.", zh:"许多年轻人从乡村搬到城市找工作。", s:["nation","state","countryside"], col:"developing country / country life", c:["听力词汇","阅读词汇"]},
+  {w:"countryside", uk:"/ˈkʌntrisaɪd/", us:"/ˈkʌntrisaɪd/", d:"n. 乡村；农村", ex:"The countryside is very beautiful in spring.", zh:"春天的乡村非常美丽。", s:["rural area","country","outdoors"], col:"in the countryside / countryside scenery", c:["听力词汇","口语高频词"]},
+  {w:"county", uk:"/ˈkaʊnti/", us:"/ˈkaʊnti/", d:"n. 郡；县", ex:"The county council is responsible for local roads.", zh:"郡议会负责地方道路。", s:["district","region","province"], col:"county council / county town", c:["听力词汇"]},
+  {w:"couple", uk:"/ˈkʌpl/", us:"/ˈkʌpl/", d:"n./v. 一对；夫妇；连接", ex:"The couple have been married for over twenty years.", zh:"这对夫妇结婚二十多年了。", s:["pair","duo","twosome"], col:"a couple of / married couple", c:["听力词汇","口语高频词"]},
+  {w:"courage", uk:"/ˈkʌrɪdʒ/", us:"/ˈkɜːrɪdʒ/", d:"n. 勇气；胆量", ex:"It takes courage to speak in front of a large audience.", zh:"在大量观众面前演讲需要勇气。", s:["bravery","boldness","nerve"], col:"have the courage / show courage", c:["听力词汇","口语高频词"]},
+  {w:"course", uk:"/kɔːs/", us:"/kɔːrs/", d:"n. 课程；过程；航线", ex:"I am taking a course in academic writing this semester.", zh:"这学期我在修一门学术写作课程。", s:["class","programme","path"], col:"of course / in the course of", c:["听力词汇","口语高频词"]},
+  {w:"court", uk:"/kɔːt/", us:"/kɔːrt/", d:"n. 法院；球场；宫廷", ex:"The case will be heard in court next month.", zh:"该案将于下月在法庭审理。", s:["tribunal","judiciary","playground"], col:"go to court / court of law", c:["听力词汇","阅读词汇"]},
+  {w:"cousin", uk:"/ˈkʌzn/", us:"/ˈkʌzn/", d:"n. 堂/表兄弟姐妹", ex:"My cousin is studying medicine at university.", zh:"我表兄在大学学医。", s:["relative","kinsman"], col:"first cousin / cousin once removed", c:["听力词汇","口语高频词"]},
+  {w:"cover", uk:"/ˈkʌvə(r)/", us:"/ˈkʌvər/", d:"v./n. 覆盖；包括；封面", ex:"The report covers all aspects of the issue.", zh:"报告涵盖了问题的所有方面。", s:["cover","include","encompass"], col:"cover up / under cover", c:["听力词汇","阅读词汇"]},
+  {w:"cow", uk:"/kaʊ/", us:"/kaʊ/", d:"n. 母牛；奶牛", ex:"The farmer has twenty cows on his farm.", zh:"农夫的农场有二十头奶牛。", s:["cattle","ox"], col:"dairy cow / cow milk", c:["听力词汇"]},
+  {w:"crack", uk:"/kræk/", us:"/kræk/", d:"n./v. 裂缝；破裂；破解", ex:"There is a crack in the wall caused by the earthquake.", zh:"地震导致墙上有一道裂缝。", s:["break","split","fracture"], col:"crack down on / crack the code", c:["听力词汇","阅读词汇"]},
+  {w:"craft", uk:"/krɑːft/", us:"/kræft/", d:"n./v. 工艺；手艺；精心制作", ex:"Traditional craft skills are being lost in modern society.", zh:"传统工艺技能在现代社会正在消失。", s:["skill","art","trade"], col:"craft fair / hand-crafted", c:["听力词汇","口语高频词"]},
+  {w:"crash", uk:"/kræʃ/", us:"/kræʃ/", d:"n./v. 碰撞；崩溃；暴跌", ex:"The stock market crashed after the announcement.", zh:"公告发布后股市暴跌。", s:["collision","accident","collapse"], col:"car crash / crash course", c:["听力词汇","阅读词汇"]},
+  {w:"crazy", uk:"/ˈkreɪzi/", us:"/ˈkreɪzi/", d:"adj. 疯狂的；着迷的", ex:"It is crazy to spend so much money on a phone.", zh:"在手机上花这么多钱太疯狂了。", s:["insane","mad","wild"], col:"crazy about / drive crazy", c:["听力词汇","口语高频词"]},
+  {w:"cream", uk:"/kriːm/", us:"/kriːm/", d:"n. 奶油；乳霜；精华", ex:"She applied sun cream before going to the beach.", zh:"去海滩前她涂了防晒霜。", s:["lotion","ointment","dairy"], col:"ice cream / face cream", c:["听力词汇","口语高频词"]},
+  {w:"create", uk:"/kriˈeɪt/", us:"/kriˈeɪt/", d:"v. 创造；创建；引起", ex:"The government created thousands of new jobs last year.", zh:"政府去年创造了数千个新就业岗位。", s:["make","produce","generate"], col:"create opportunities / create awareness", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"creation", uk:"/kriˈeɪʃn/", us:"/kriˈeɪʃn/", d:"n. 创造；创作；产物", ex:"The creation of the internet changed the world forever.", zh:"互联网的创造永远改变了世界。", s:["invention","production","making"], col:"job creation / creation of", c:["听力词汇","阅读词汇"]},
+  {w:"creative", uk:"/kriˈeɪtɪv/", us:"/kriˈeɪtɪv/", d:"adj. 创造性的；有创意的", ex:"She is a very creative designer with many original ideas.", zh:"她是一位非常有创意的设计师，有许多原创想法。", s:["imaginative","inventive","original"], col:"creative thinking / creative industry", c:["听力词汇","口语高频词","写作高分词"]},
+  {w:"creature", uk:"/ˈkriːtʃə(r)/", us:"/ˈkriːtʃər/", d:"n. 生物；动物；人", ex:"Many sea creatures are endangered by plastic pollution.", zh:"许多海洋生物因塑料污染而濒临灭绝。", s:["animal","organism","being"], col:"living creature / strange creature", c:["听力词汇","阅读词汇"]},
+  {w:"credit", uk:"/ˈkredɪt/", us:"/ˈkredɪt/", d:"n./v. 信用；学分；赞扬", ex:"You need a good credit score to get a mortgage.", zh:"你需要良好的信用评分才能获得抵押贷款。", s:["trust","recognition","loan"], col:"credit card / on credit", c:["听力词汇","阅读词汇"]},
+  {w:"crew", uk:"/kruː/", us:"/kruː/", d:"n. 全体船员；机组人员；团队", ex:"The flight crew ensured everyone was safe during the turbulence.", zh:"空乘人员在颠簸中确保每个人安全。", s:["team","staff","personnel"], col:"cabin crew / film crew", c:["听力词汇"]},
+  {w:"crime", uk:"/kraɪm/", us:"/kraɪm/", d:"n. 犯罪；罪行", ex:"Crime rates have decreased in the city over the past decade.", zh:"过去十年该市犯罪率下降了。", s:["offence","wrongdoing","illegal act"], col:"commit a crime / crime rate", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"criminal", uk:"/ˈkrɪmɪnl/", us:"/ˈkrɪmɪnl/", d:"n./adj. 罪犯；犯罪的", ex:"The criminal was sentenced to five years in prison.", zh:"罪犯被判处五年监禁。", s:["offender","lawbreaker","culprit"], col:"criminal record / criminal law", c:["听力词汇","阅读词汇"]},
+  {w:"crisis", uk:"/ˈkraɪsɪs/", us:"/ˈkraɪsɪs/", d:"n. 危机；紧要关头", ex:"The country is facing an economic crisis.", zh:"该国正面临经济危机。", s:["emergency","catastrophe","difficulty"], col:"financial crisis / in crisis", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"critic", uk:"/ˈkrɪtɪk/", us:"/ˈkrɪtɪk/", d:"n. 批评家；评论家", ex:"The film received positive reviews from critics.", zh:"这部电影获得了评论家的积极评价。", s:["reviewer","commentator","analyst"], col:"film critic / music critic", c:["听力词汇","阅读词汇"]},
+  {w:"critical", uk:"/ˈkrɪtɪkl/", us:"/ˈkrɪtɪkl/", d:"adj. 批评的；关键的；危急的", ex:"Time management is critical for exam success.", zh:"时间管理对考试成功至关重要。", s:["crucial","vital","essential"], col:"critical thinking / critical moment", c:["听力词汇","阅读词汇","写作高分词","学术难词"]},
+  {w:"criticism", uk:"/ˈkrɪtɪsɪzəm/", us:"/ˈkrɪtɪsɪzəm/", d:"n. 批评；评论；指责", ex:"She accepted the criticism and improved her work.", zh:"她接受了批评并改进了工作。", s:["feedback","review","objection"], col:"constructive criticism / face criticism", c:["听力词汇","阅读词汇"]},
+  {w:"criticize", uk:"/ˈkrɪtɪsaɪz/", us:"/ˈkrɪtɪsaɪz/", d:"v. 批评；指责；评论", ex:"The report criticizes the government's handling of the crisis.", zh:"报告批评了政府对危机的处理。", s:["condemn","attack","find fault"], col:"criticize for / heavily criticized", c:["听力词汇","阅读词汇"]},
+  {w:"crop", uk:"/krɒp/", us:"/krɑːp/", d:"n. 庄稼；作物；收成", ex:"The drought destroyed most of the crops this year.", zh:"干旱摧毁了今年大部分庄稼。", s:["harvest","produce","yield"], col:"crop failure / cash crop", c:["听力词汇","阅读词汇"]},
+  {w:"cross", uk:"/krɒs/", us:"/krɔːs/", d:"v./adj. 穿过；交叉；生气的", ex:"You must cross the road at the pedestrian crossing.", zh:"你必须在人行横道过马路。", s:["traverse","go across","intersect"], col:"cross-cultural / cross out", c:["听力词汇","口语高频词"]},
+  {w:"crowd", uk:"/kraʊd/", us:"/kraʊd/", d:"n./v. 人群；拥挤", ex:"A large crowd gathered to watch the parade.", zh:"一大群人聚集观看游行。", s:["multitude","throng","mass"], col:"a crowd of / crowd out", c:["听力词汇","口语高频词"]},
+  {w:"crucial", uk:"/ˈkruːʃl/", us:"/ˈkruːʃl/", d:"adj. 至关重要的；决定性的", ex:"Sleep is crucial for memory consolidation.", zh:"睡眠对记忆巩固至关重要。", s:["vital","essential","key"], col:"crucial role / crucial factor", c:["听力词汇","阅读词汇","写作高分词","学术难词"]},
+  {w:"cruel", uk:"/ˈkruːəl/", us:"/ˈkruːəl/", d:"adj. 残忍的；残酷的", ex:"Animal testing is considered cruel by many people.", zh:"许多人认为动物实验是残忍的。", s:["brutal","heartless","inhumane"], col:"cruel to / cruel treatment", c:["听力词汇","口语高频词"]},
+  {w:"cruise", uk:"/kruːz/", us:"/kruːz/", d:"n./v. 巡航；乘船游览", ex:"They went on a cruise around the Mediterranean.", zh:"他们乘船游览了地中海。", s:["voyage","sail","tour"], col:"cruise ship / go on a cruise", c:["听力词汇","口语高频词"]},
+  {w:"crush", uk:"/krʌʃ/", us:"/krʌʃ/", d:"v./n. 压碎；镇压；迷恋", ex:"The machine crushes the plastic bottles for recycling.", zh:"机器压碎塑料瓶以便回收。", s:["squash","compress","smash"], col:"crush on / crush the opposition", c:["听力词汇"]},
+  {w:"cry", uk:"/kraɪ/", us:"/kraɪ/", d:"v./n. 哭；叫喊", ex:"The baby started to cry when it was hungry.", zh:"婴儿饿了就开始哭。", s:["weep","sob","wail"], col:"cry for help / cry out", c:["听力词汇","口语高频词"]},
+  {w:"crystal", uk:"/ˈkrɪstl/", us:"/ˈkrɪstl/", d:"n./adj. 水晶；晶体；清澈的", ex:"The water in the lake was crystal clear.", zh:"湖水清澈见底。", s:["gem","quartz","clear"], col:"crystal clear / crystal ball", c:["听力词汇","口语高频词"]},
+  {w:"cube", uk:"/kjuːb/", us:"/kjuːb/", d:"n. 立方体；立方", ex:"Add two ice cubes to your drink.", zh:"在饮料里加两块冰。", s:["block","square","hexahedron"], col:"ice cube / sugar cube", c:["听力词汇"]},
+  {w:"culture", uk:"/ˈkʌltʃə(r)/", us:"/ˈkʌltʃər/", d:"n. 文化；文明；培养", ex:"Understanding different cultures is important in a globalized world.", zh:"在全球化世界中，理解不同文化很重要。", s:["civilization","tradition","customs"], col:"popular culture / culture shock", c:["听力词汇","阅读词汇","口语高频词","写作高分词"]},
+  {w:"cup", uk:"/kʌp/", us:"/kʌp/", d:"n. 杯子；奖杯", ex:"Would you like a cup of tea or coffee?", zh:"你想喝杯茶还是咖啡？", s:["mug","beaker","trophy"], col:"a cup of / World Cup", c:["听力词汇","口语高频词"]},
+  {w:"cupboard", uk:"/ˈkʌbəd/", us:"/ˈkʌbərd/", d:"n. 橱柜；碗柜", ex:"The plates are kept in the kitchen cupboard.", zh:"盘子放在厨房橱柜里。", s:["cabinet","closet","storage"], col:"kitchen cupboard / airing cupboard", c:["听力词汇"]},
+  {w:"cure", uk:"/kjʊə(r)/", us:"/kjʊr/", d:"n./v. 治愈；疗法；解决", ex:"There is no cure for the common cold.", zh:"普通感冒没有治愈方法。", s:["heal","treat","remedy"], col:"cure for / find a cure", c:["听力词汇","阅读词汇"]},
+  {w:"curiosity", uk:"/ˌkjʊəriˈɒsəti/", us:"/ˌkjʊriˈɑːsəti/", d:"n. 好奇心；求知欲", ex:"Children have a natural curiosity about the world.", zh:"孩子对世界有天生的好奇心。", s:["interest","inquisitiveness","wonder"], col:"out of curiosity / satisfy curiosity", c:["听力词汇","口语高频词"]},
+  {w:"curious", uk:"/ˈkjʊəriəs/", us:"/ˈkjʊriəs/", d:"adj. 好奇的；奇特的", ex:"I am curious about how the new technology works.", zh:"我对新技术如何运作感到好奇。", s:["inquisitive","interested","puzzled"], col:"curious about / curious to know", c:["听力词汇","口语高频词"]},
+  {w:"current", uk:"/ˈkʌrənt/", us:"/ˈkɜːrənt/", d:"adj./n. 当前的；流行的；水流", ex:"The current situation requires immediate action.", zh:"当前形势需要立即行动。", s:["present","existing","ongoing"], col:"current affairs / current trend", c:["听力词汇","阅读词汇","写作高分词"]},
+  {w:"currently", uk:"/ˈkʌrəntli/", us:"/ˈkɜːrəntli/", d:"adv. 当前；目前", ex:"She is currently working on her PhD thesis.", zh:"她目前正在写博士论文。", s:["now","at present","presently"], col:"currently available / currently under review", c:["听力词汇","阅读词汇","学术难词"]},
+  {w:"curriculum", uk:"/kəˈrɪkjələm/", us:"/kəˈrɪkjələm/", d:"n. 课程；全部课程", ex:"The school has updated its curriculum to include more practical subjects.", zh:"学校更新了课程，增加了更多实用科目。", s:["syllabus","programme","course of study"], col:"national curriculum / school curriculum", c:["听力词汇","学术难词"]},
+  {w:"curse", uk:"/kɜːs/", us:"/kɜːrs/", d:"n./v. 诅咒；咒骂", ex:"He muttered a curse under his breath.", zh:"他低声咒骂了一句。", s:["swear","hex","damnation"], col:"curse at / under a curse", c:["听力词汇"]},
+  {w:"curtain", uk:"/ˈkɜːtn/", us:"/ˈkɜːrtn/", d:"n. 窗帘；幕布", ex:"She drew the curtains to let in the sunlight.", zh:"她拉开窗帘让阳光进来。", s:["drape","screen","blind"], col:"stage curtain / shower curtain", c:["听力词汇"]},
+  {w:"curve", uk:"/kɜːv/", us:"/kɜːrv/", d:"n./v. 曲线；弯曲", ex:"The road curves sharply to the left.", zh:"道路向左急转。", s:["bend","arc","arch"], col:"learning curve / bell curve", c:["听力词汇","学术难词"]},
+  {w:"cushion", uk:"/ˈkʊʃn/", us:"/ˈkʊʃn/", d:"n. 垫子；靠垫；缓冲", ex:"Add a cushion to the chair for extra comfort.", zh:"在椅子上加个垫子更舒服。", s:["pillow","pad","buffer"], col:"seat cushion / cushion the blow", c:["听力词汇","口语高频词"]},
+  {w:"custom", uk:"/ˈkʌstəm/", us:"/ˈkʌstəm/", d:"n. 习俗；惯例；海关", ex:"It is the custom to give gifts during the festival.", zh:"节日期间送礼是习俗。", s:["tradition","practice","convention"], col:"local custom / social custom", c:["听力词汇","阅读词汇"]},
+  {w:"customer", uk:"/ˈkʌstəmə(r)/", us:"/ˈkʌstəmər/", d:"n. 顾客；客户", ex:"The company aims to improve customer satisfaction.", zh:"公司旨在提高客户满意度。", s:["client","consumer","patron"], col:"customer service / regular customer", c:["听力词汇","阅读词汇","口语高频词"]},
+  {w:"cut", uk:"/kʌt/", us:"/kʌt/", d:"v./n. 切；割；减少", ex:"The company decided to cut costs by reducing staff.", zh:"公司决定通过裁员来削减成本。", s:["slice","reduce","trim"], col:"cut down on / cut off", c:["听力词汇","口语高频词"]},
+  {w:"cycle", uk:"/ˈsaɪkl/", us:"/ˈsaɪkl/", d:"n./v. 循环；周期；骑自行车", ex:"The life cycle of a butterfly has four stages.", zh:"蝴蝶的生命周期有四个阶段。", s:["round","period","loop"], col:"life cycle / business cycle", c:["听力词汇","阅读词汇","学术难词"]},
+
+
+
+  
 ];
 
 /* ============================================================
@@ -1199,9 +1414,9 @@ function sessionCardHtml(){
         <div class="hint">轻触卡片，查看音标 · 释义 · 例句</div>
       </div>
       <div class="face back">
-        <div class="ph-row">
-          <span class="ph-lab">英</span><button class="ph-btn" onclick="event.stopPropagation();speakWord('uk')">🔊 <span id="fcUk"></span></button>
+        <div class="ph-row">          
           <span class="ph-lab">美</span><button class="ph-btn" onclick="event.stopPropagation();speakWord('us')">🔊 <span id="fcUs"></span></button>
+          <span class="ph-lab">英</span><button class="ph-btn" onclick="event.stopPropagation();speakWord('uk')">🔊 <span id="fcUk"></span></button>         
         </div>
         <div class="def" id="fcDef"></div>
         <div class="block ex"><b>例句</b><span id="fcEx"></span></div>
@@ -1244,7 +1459,16 @@ function renderSessionCard(){
   updateFavBtn();
   $('#flipCard').classList.remove('flipped');
 }
-function toggleFlip(){const c=$('#flipCard');if(c)c.classList.toggle('flipped');}
+function toggleFlip(){
+  const c=$('#flipCard');
+  if(!c)return;
+  c.classList.toggle('flipped');
+  // 翻转到背面时自动朗读：先读美音单词，1.6秒后读例句
+  if(c.classList.contains('flipped')&&currentWord){
+    speakText(currentWord.w,'en-US');
+    setTimeout(()=>{if(currentWord)speakText(currentWord.ex,'en-US');},1600);
+  }
+}
 function updateFavBtn(){
   const b=$('#btnFav');if(!b||!currentWord)return;
   const faved=state.favs.includes(currentWord.w);
@@ -1352,7 +1576,7 @@ function addCurrentLibToToday(){
  * ============================================================ */
 let quizState=null;
 let quizType='mc',quizPool='all',quizN=20;
-const MODE_NAMES={mc:'英汉选词',fill:'汉译英填空',listen:'听音辨词',sentence:'真题例句填空'};
+const MODE_NAMES={mc:'英汉选词',fill:'汉译英填空',listen:'听音辨词',sentence:'真题例句选词'};
 function modeName(t){return MODE_NAMES[t]||t;}
 function buildQuizPool(pool){
   if(pool==='all')return WORDS.slice();
@@ -1373,8 +1597,11 @@ function makeQuestion(type,w,pool){
     const ex=w.ex;
     const idx=ex.toLowerCase().indexOf(w.w.toLowerCase());
     const prompt=idx>=0?ex.slice(0,idx)+' ______ '+ex.slice(idx+w.w.length):ex+' ( ____ )';
-    return {type:'sentence',word:w,prompt:'<span class="blank">'+(idx>=0?'在空白处填入正确单词':'')+'</span> '+prompt,answer:w.w};
+    const others=shuffle(pool).filter(x=>x.w!==w.w&&x.w.length>=3);
+    const options=shuffle([w.w,...others.slice(0,3).map(x=>x.w)]);
+    return {type:'sentence',word:w,prompt:prompt,options:options,answer:w.w};
   }
+
   return null;
 }
 function startQuiz(){
@@ -1403,7 +1630,16 @@ function renderQuestion(){
       <div class="q-feedback" id="qFb"></div>
       <button class="q-next hidden" id="qNext" onclick="quizNext()">下一题 →</button>`;
     $$('#mcOptions button').forEach(b=>{b.onclick=()=>answerMC(parseInt(b.dataset.i));});
+    }else if(q.type==='sentence'){
+    el.innerHTML=`
+      <div class="q-meta">第 ${quizState.idx+1} / ${total} 题 · 真题例句选词</div>
+      <div class="q-prompt">根据句意，选择空白处应填入的单词：<div class="sentence-prompt">${q.prompt}</div></div>
+      <div class="options" id="mcOptions">${q.options.map((o,i)=>`<button data-i="${i}">${o}</button>`).join('')}</div>
+      <div class="q-feedback" id="qFb"></div>
+      <button class="q-next hidden" id="qNext" onclick="quizNext()">下一题 →</button>`;
+    $$('#mcOptions button').forEach(b=>{b.onclick=()=>answerMC(parseInt(b.dataset.i));});
   }else{
+
     const audioBtn=q.type==='listen'?`<div class="q-audio-row"><button onclick="speakText('${q.word.w}','${state.settings.accent}')">🔊 播放发音</button><span style="font-size:12px;color:var(--ink-soft)">可反复播放</span></div>`:'';
     el.innerHTML=`
       <div class="q-meta">第 ${quizState.idx+1} / ${total} 题 · ${modeName(q.type)}</div>
@@ -1489,6 +1725,16 @@ function showResult(){
 }
 function restartQuiz(){quizState=null;$('#quizResult').classList.add('hidden');$('#quizSetup').classList.remove('hidden');}
 function backToQuizSetup(){restartQuiz();}
+function quitQuiz(){
+  if(!quizState||quizState.done){switchView('home');return;}
+  if(confirm('确定要退出本次测验吗？已答题目不会保存进度。')){
+    quizState=null;
+    $('#quizRun').classList.add('hidden');
+    $('#quizResult').classList.add('hidden');
+    $('#quizSetup').classList.remove('hidden');
+    switchView('home');
+  }
+}
 function redoWrong(){
   if(!state.wrong.length){toast('错题本是空的');return;}
   setQuizPool('wrong');startQuiz();
