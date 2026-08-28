@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="雅思词汇学习单页网站：背词、自测、记忆复盘，覆盖雅思高频核心词汇">
+<title>雅思词库 · IELTS Vocabulary</title>
+<style>
+/* ============================================================
+ *  全局变量与主题（浅色/深色两套配色，低饱和蓝白护眼）
+ *  说明：本文件零外部依赖、不使用任何 CDN，断网也能打开；
+ *  若你后续想引入图标库/字体，可自行添加免费公共 CDN 链接。
+ * ============================================================ */
+:root{
+  --bg:#f4f7fb;            /* 页面背景：低饱和浅蓝白 */
+  --card:#ffffff;          /* 卡片背景 */
+  --line:#e2e9f2;          /* 边框/分隔线 */
+  --ink:#23303f;           /* 正文深色 */
+  --ink-soft:#5f6f82;      /* 次要文字 */
+  --blue:#3d6da2;          /* 主色：低饱和蓝 */
+  --blue-deep:#2f5685;     /* 主色加深 */
+  --blue-soft:#eaf1fa;     /* 主色浅底 */
+  --green:#3e8e63;         /* 成功/已掌握 */
+  --green-soft:#e6f4ec;
+  --amber:#b07e2a;         /* 待复习/警告 */
+  --amber-soft:#faf0dc;
+  --red:#b85c4e;           /* 陌生/错误 */
+  --red-soft:#f9ece9;
+  --shadow:0 1px 4px rgba(35,48,63,.06);
+  --radius:10px;
+}
+/* 深色主题：仅覆盖变量，其余样式自动跟随 */
+[data-theme="dark"]{
+  --bg:#131a23;
+  --card:#1b242f;
+  --line:#2b3747;
+  --ink:#e6edf5;
+  --ink-soft:#9fb0c3;
+  --blue:#7ea8d8;
+  --blue-deep:#9fc0e6;
+  --blue-soft:#243349;
+  --green:#6fbf93;
+  --green-soft:#1e3529;
+  --amber:#d8ad62;
+  --amber-soft:#352d1c;
+  --red:#d9897c;
+  --red-soft:#3a2420;
+  --shadow:0 1px 4px rgba(0,0,0,.3);
+}
+
+/* ============================================================
+ *  基础布局
+ * ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  transition:background .2s,color .2s;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;font-size:14px;color:var(--ink)}
+a{color:var(--blue)}
+.hidden{display:none!important}
+
+/* ============================================================
+ *  顶部导航栏
+ * ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:var(--card);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;padding:0 16px;height:56px;
+  box-shadow:var(--shadow);
+}
+.brand{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.brand .logo{
+  font-family:Georgia,"Times New Roman",serif;font-size:20px;font-weight:700;color:var(--blue);
+  letter-spacing:.5px;
+}
+.brand .sub{font-size:11px;color:var(--ink-soft)}
+.nav-links{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{
+  padding:7px 13px;border-radius:8px;font-size:14px;color:var(--ink-soft);
+  text-decoration:none;white-space:nowrap;transition:background .15s,color .15s;
+}
+.nav-links a:hover{background:var(--blue-soft);color:var(--blue)}
+.nav-links a.active{background:var(--blue);color:#fff;font-weight:600}
+.theme-btn{
+  width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:var(--ink-soft);border:1px solid var(--line);
+}
+.theme-btn:hover{background:var(--blue-soft);color:var(--blue)}
+
+/* ============================================================
+ *  主内容区
+ * ============================================================ */
+main{max-width:960px;margin:0 auto;padding:20px 16px 60px}
+.view{display:none}
+.view.active{display:block}
+.section-title{font-size:18px;margin-bottom:4px}
+.section-sub{font-size:13px;color:var(--ink-soft);margin-bottom:16px}
+
+/* ============================================================
+ *  首页：欢迎区 + 今日任务卡片
+ * ============================================================ */
+.welcome{margin-bottom:16px}
+.welcome h2{font-size:22px;font-weight:700}
+.welcome p{font-size:13px;color:var(--ink-soft);margin-top:2px}
+.task-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.task-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px;text-align:center;box-shadow:var(--shadow);
+}
+.task-card .num{font-size:28px;font-weight:700;color:var(--blue);font-family:Georgia,serif}
+.task-card .label{font-size:13px;color:var(--ink-soft);margin:4px 0 10px}
+.task-card button{
+  font-size:13px;padding:6px 14px;border-radius:8px;color:#fff;
+  background:var(--blue);width:100%;
+}
+.task-card button:hover{background:var(--blue-deep)}
+
+/* ============================================================
+ *  翻转卡片（正面英文 / 反面释义）
+ * ============================================================ */
+.flip-wrap{perspective:1000px;margin-bottom:12px}
+.flip-card{
+  width:100%;min-height:300px;position:relative;cursor:pointer;
+  transition:transform .4s;transform-style:preserve-3d;
+}
+.flip-card .face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:14px;border:1px solid var(--line);background:var(--card);
+  box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:center;
+  padding:30px 26px;overflow:hidden;
+}
+.flip-card .front{align-items:center;text-align:center;gap:16px}
+.flip-card .front .word-big{
+  font-family:Georgia,"Times New Roman",serif;font-size:40px;font-weight:700;color:var(--ink);
+  word-break:break-word;line-height:1.2;
+}
+.flip-card .front .hint{font-size:13px;color:var(--ink-soft)}
+.flip-card .front .cats{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.cat-tag{
+  font-size:11px;padding:2px 9px;border-radius:20px;background:var(--blue-soft);color:var(--blue);
+}
+.flip-card .back{transform:rotateY(180deg);text-align:left;gap:10px;overflow-y:auto}
+/* 翻转触发：给卡片加 flipped 类即旋转 180 度显示反面 */
+.flip-card.flipped{transform:rotateY(180deg)}
+/* 反面内容分层：音标/释义/例句/搭配/同义，重点搭配高亮 */
+.ph-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.ph-row .ph-lab{font-size:13px;color:var(--ink-soft)}
+.ph-btn{
+  font-size:15px;color:var(--blue);background:var(--blue-soft);
+  padding:4px 10px;border-radius:8px;border:1px solid var(--line);
+}
+.ph-btn:hover{background:var(--blue);color:#fff}
+.back .def{font-size:18px;font-weight:600;color:var(--ink)}
+.back .block{font-size:13.5px}
+.back .block b{color:var(--blue);margin-right:6px;white-space:nowrap}
+.back .ex{color:var(--ink-soft);font-style:italic}
+.back .ex-zh{color:var(--ink-soft);font-size:13px}
+.back .col{color:var(--ink)}
+/* 写作搭配高亮标注 */
+.back .col span{background:var(--amber-soft);color:var(--amber);padding:1px 6px;border-radius:5px;font-weight:600}
+.back .syn{color:var(--ink-soft)}
+.back .syn em{color:var(--green);font-style:normal}
+
+/* 卡片操作按钮 */
+.card-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.card-actions button{
+  padding:11px 0;border-radius:10px;font-size:15px;font-weight:600;color:#fff;
+  border:1px solid transparent;
+}
+.act-unknown{background:var(--red)}
+.act-unknown:hover{opacity:.88}
+.act-fuzzy{background:var(--amber)}
+.act-fuzzy:hover{opacity:.88}
+.act-known{background:var(--green)}
+.act-known:hover{opacity:.88}
+.session-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.session-nav .prog{font-size:13px;color:var(--ink-soft)}
+.session-nav .ops{display:flex;gap:8px}
+.session-nav .ops button{
+  font-size:13px;padding:7px 14px;border-radius:8px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink-soft);
+}
+.session-nav .ops button:hover{border-color:var(--blue);color:var(--blue)}
+.session-nav .ops button.faved{color:var(--amber);border-color:var(--amber)}
+
+.ebbinghaus-note{
+  margin-top:16px;padding:12px 16px;background:var(--blue-soft);border-radius:var(--radius);
+  font-size:13px;color:var(--blue-deep);line-height:1.7;
+}
+
+/* ============================================================
+ *  词库：搜索 + 分类标签 + 词条列表
+ * ============================================================ */
+.search-bar{display:flex;gap:8px;margin-bottom:12px}
+.search-bar input{
+  flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:10px;
+  background:var(--card);outline:none;
+}
+.search-bar input:focus{border-color:var(--blue)}
+.search-bar .clear-btn{padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink-soft)}
+.cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.cat-tabs button{
+  font-size:13px;padding:6px 14px;border-radius:20px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink-soft);
+}
+.cat-tabs button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.lib-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap}
+.lib-toolbar .count{font-size:13px;color:var(--ink-soft)}
+.lib-toolbar button{
+  font-size:13px;padding:6px 14px;border-radius:8px;background:var(--green);color:#fff;
+}
+.lib-toolbar button:hover{opacity:.9}
+.word-list{display:flex;flex-direction:column;gap:10px}
+.word-item{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.wi-head{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;flex-wrap:wrap;
+}
+.wi-head:hover{background:var(--blue-soft)}
+.wi-word{font-family:Georgia,serif;font-size:18px;font-weight:700;color:var(--blue);min-width:120px}
+.wi-ph{font-size:13px;color:var(--ink-soft);min-width:90px}
+.wi-def{flex:1;font-size:14px;min-width:140px}
+.wi-cats{display:flex;gap:4px;flex-wrap:wrap}
+.wi-arrow{color:var(--ink-soft);font-size:12px}
+.wi-detail{padding:0 16px 14px;border-top:1px dashed var(--line);font-size:13.5px;display:none}
+.word-item.open .wi-detail{display:block;padding-top:10px}
+.wi-detail .row{margin:6px 0}
+.wi-detail .row b{color:var(--blue);margin-right:6px}
+.wi-detail .col-highlight{background:var(--amber-soft);color:var(--amber);padding:1px 6px;border-radius:5px;font-weight:600}
+.wi-detail .btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.wi-detail .btn-row button{
+  font-size:12.5px;padding:5px 12px;border-radius:7px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink-soft);
+}
+.wi-detail .btn-row button:hover{border-color:var(--blue);color:var(--blue)}
+.wi-detail .btn-row button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ============================================================
+ *  自测刷题
+ * ============================================================ */
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.mode-grid button{
+  padding:16px;border-radius:var(--radius);border:1px solid var(--line);
+  background:var(--card);font-size:15px;font-weight:600;color:var(--ink);
+}
+.mode-grid button:hover{border-color:var(--blue);color:var(--blue)}
+.mode-grid button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.opt-row{margin-bottom:14px}
+.opt-row .opt-lab{font-size:13px;color:var(--ink-soft);margin-bottom:6px}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip-row button{
+  font-size:13px;padding:6px 14px;border-radius:20px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink-soft);
+}
+.chip-row button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.start-btn{
+  width:100%;padding:14px;border-radius:10px;background:var(--blue);color:#fff;
+  font-size:16px;font-weight:600;
+}
+.start-btn:hover{background:var(--blue-deep)}
+.q-progress{height:8px;background:var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.q-progress .bar{height:100%;background:var(--blue);transition:width .3s}
+.q-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:24px;box-shadow:var(--shadow);
+}
+.q-meta{font-size:13px;color:var(--ink-soft);margin-bottom:10px}
+.q-prompt{font-size:16px;line-height:1.8;margin-bottom:6px}
+.q-prompt .blank{color:var(--blue);font-weight:700}
+.q-prompt .big-word{font-family:Georgia,serif;font-size:26px;font-weight:700;color:var(--blue)}
+.q-audio-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.q-audio-row button{font-size:13px;padding:7px 14px;border-radius:8px;background:var(--blue-soft);color:var(--blue);border:1px solid var(--line)}
+.q-audio-row button:hover{background:var(--blue);color:#fff}
+.q-input{
+  width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+  background:var(--bg);outline:none;font-size:16px;
+}
+.q-input:focus{border-color:var(--blue)}
+.options{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.options button{
+  text-align:left;padding:11px 14px;border-radius:10px;border:1px solid var(--line);
+  background:var(--card);font-size:14px;color:var(--ink);
+}
+.options button:hover:not(:disabled){border-color:var(--blue);background:var(--blue-soft)}
+.options button.correct{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.options button.wrong{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.options button:disabled{cursor:default}
+.q-feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;display:none}
+.q-feedback.show{display:block}
+.q-feedback.ok{background:var(--green-soft);color:var(--green)}
+.q-feedback.no{background:var(--red-soft);color:var(--red)}
+.q-feedback .fb-word{font-family:Georgia,serif;font-weight:700;font-size:16px}
+.q-next{margin-top:14px;width:100%;padding:12px;border-radius:10px;background:var(--blue);color:#fff;font-size:15px;font-weight:600}
+
+/* 结果页 */
+.result-box{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;text-align:center}
+.result-box .score{font-family:Georgia,serif;font-size:48px;font-weight:700;color:var(--blue)}
+.result-box .score-sub{font-size:14px;color:var(--ink-soft);margin-bottom:14px}
+.result-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.result-actions button{
+  padding:10px 18px;border-radius:10px;background:var(--blue);color:#fff;font-size:14px;
+}
+.result-actions button.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink-soft)}
+.wrong-title{margin:18px 0 10px;font-size:15px;font-weight:600}
+
+/* ============================================================
+ *  生词本 / 工具条
+ * ============================================================ */
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.toolbar .info{font-size:13px;color:var(--ink-soft);margin-right:auto}
+.toolbar button{
+  font-size:13px;padding:7px 14px;border-radius:8px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink-soft);
+}
+.toolbar button:hover{border-color:var(--blue);color:var(--blue)}
+.toolbar button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ============================================================
+ *  学习数据
+ * ============================================================ */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px;text-align:center;box-shadow:var(--shadow);
+}
+.stat .num{font-family:Georgia,serif;font-size:30px;font-weight:700;color:var(--blue)}
+.stat .lab{font-size:13px;color:var(--ink-soft);margin-top:4px}
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.chart-card h4{font-size:15px;margin-bottom:14px}
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:150px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.bar-col .bar{width:100%;max-width:38px;background:var(--blue);border-radius:6px 6px 0 0;transition:height .4s;min-height:2px}
+.bar-col .v{font-size:11px;color:var(--ink-soft)}
+.bar-col .d{font-size:11px;color:var(--ink-soft)}
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px}
+.prog-row .lab{width:70px;color:var(--ink-soft);white-space:nowrap}
+.prog-row .track{flex:1;height:8px;background:var(--line);border-radius:10px;overflow:hidden}
+.prog-row .fill{height:100%;background:var(--blue);border-radius:10px}
+.prog-row .pct{width:44px;text-align:right;color:var(--ink-soft)}
+
+/* ============================================================
+ *  设置
+ * ============================================================ */
+.setting-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.setting-card h4{font-size:15px;margin-bottom:12px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;flex-wrap:wrap}
+.setting-row .lab{font-size:14px}
+.setting-row .lab small{display:block;font-size:12px;color:var(--ink-soft)}
+.setting-row select{ padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.setting-row input[type=range]{width:160px}
+.setting-row button{
+  padding:8px 16px;border-radius:8px;background:var(--blue);color:#fff;font-size:13px;
+}
+.setting-row button.danger{background:var(--red)}
+.setting-row button.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink-soft)}
+.about-line{font-size:13px;color:var(--ink-soft);line-height:2}
+
+/* ============================================================
+ *  弹窗 / Toast / 打印
+ * ============================================================ */
+.modal-mask{
+  position:fixed;inset:0;background:rgba(15,23,34,.5);z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.modal{background:var(--card);border-radius:14px;width:100%;max-width:640px;max-height:86vh;display:flex;flex-direction:column}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+.modal-head h3{font-size:16px}
+.modal-head button{font-size:16px;color:var(--ink-soft);padding:2px 8px}
+.modal-body{flex:1;overflow:auto;padding:16px 18px;font-size:13.5px;white-space:pre-wrap;line-height:1.8}
+.modal-foot{display:flex;gap:10px;padding:12px 18px;border-top:1px solid var(--line);justify-content:flex-end}
+.modal-foot button{padding:8px 16px;border-radius:8px;background:var(--blue);color:#fff;font-size:13px}
+#toast{
+  position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+  background:#22303f;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;
+  opacity:0;pointer-events:none;transition:all .25s;z-index:300;max-width:90vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 打印：仅输出打印区内容 */
+#printArea{display:none}
+@media print{
+  body *{visibility:hidden}
+  #printArea,#printArea *{visibility:visible}
+  #printArea{display:block;position:absolute;left:0;top:0;width:100%;font-size:13px;color:#000}
+}
+
+/* ============================================================
+ *  响应式：手机 / 平板自适应
+ * ============================================================ */
+@media (max-width:768px){
+  main{padding:14px 12px 70px}
+  .topbar{height:auto;flex-wrap:wrap;padding:10px 12px;gap:8px}
+  .nav-links{order:3;width:100%;padding-bottom:2px}
+  .nav-links a{font-size:13px;padding:6px 11px}
+  .brand .sub{display:none}
+  .task-grid{grid-template-columns:1fr;gap:10px}
+  .task-card{display:flex;align-items:center;justify-content:space-between;text-align:left;padding:12px 16px}
+  .task-card .num{font-size:22px;margin-right:8px}
+  .task-card .label{margin:0 8px 0 0;flex:1}
+  .task-card button{width:auto}
+  .flip-card{min-height:260px}
+  .flip-card .front .word-big{font-size:32px}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .mode-grid{grid-template-columns:1fr}
+  .card-actions{grid-template-columns:repeat(3,1fr)}
+  .wi-head{gap:6px}
+  .wi-word{min-width:0;font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 顶部导航栏 ==================== -->
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">雅思词库</span>
+    <span class="sub">IELTS · 3500</span>
+  </div>
+  <nav class="nav-links" id="navLinks">
+    <a data-view="home" class="active" href="javascript:void(0)">首页背词</a>
+    <a data-view="library" href="javascript:void(0)">分类词库</a>
+    <a data-view="quiz" href="javascript:void(0)">自测刷题</a>
+    <a data-view="fav" href="javascript:void(0)">生词本</a>
+    <a data-view="stats" href="javascript:void(0)">学习数据</a>
+    <a data-view="settings" href="javascript:void(0)">设置</a>
+  </nav>
+  <button class="theme-btn" id="themeBtn" title="切换深色/浅色模式">◐</button>
+</header>
+
+<main>
+  <!-- ==================== 视图1：首页背词 ==================== -->
+  <section class="view active" id="view-home">
+    <div class="welcome">
+      <h2 id="homeGreeting">你好，今天继续背词</h2>
+      <p id="todayDate"></p>
+    </div>
+    <div class="task-grid">
+      <div class="task-card">
+        <div><div class="num" id="newCount">0</div><div class="label">待学新词</div></div>
+        <button id="startNewBtn">开始学习</button>
+      </div>
+      <div class="task-card">
+        <div><div class="num" id="reviewCount">0</div><div class="label">今日待复习</div></div>
+        <button id="startReviewBtn">开始复习</button>
+      </div>
+      <div class="task-card">
+        <div><div class="num" id="masteredCountHome">0</div><div class="label">已掌握</div></div>
+        <button onclick="switchView('stats')">查看数据</button>
+      </div>
+    </div>
+    <!-- 卡片背诵区（新词学习/复习/生词本背诵共用） -->
+    <div id="sessionArea"></div>
+    <div class="ebbinghaus-note">
+      <b>艾宾浩斯记忆法：</b>每次点「已掌握」会按 1→2→4→7→15→30 天的间隔自动安排复习；
+      点「待复习」安排明天再练，点「陌生」今天内再次出现。坚持按计划复习，遗忘率可大幅降低。
+    </div>
+  </section>
+
+  <!-- ==================== 视图2：分类词库 ==================== -->
+  <section class="view" id="view-library">
+    <h2 class="section-title">分类词库</h2>
+    <p class="section-sub">浏览全部雅思词汇，可搜索、筛选分类，并一键加入今日背诵</p>
+    <div class="search-bar">
+      <input id="searchInput" type="text" placeholder="输入英文单词或中文释义快速检索…" autocomplete="off">
+      <button class="clear-btn" id="searchClear" title="清空">✕</button>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="lib-toolbar">
+      <span class="count" id="libCount"></span>
+      <button id="libStartBtn">把当前列表加入今日背诵</button>
+    </div>
+    <div class="word-list" id="libList"></div>
+  </section>
+
+  <!-- ==================== 视图3：自测刷题 ==================== -->
+  <section class="view" id="view-quiz">
+    <h2 class="section-title">自测刷题</h2>
+    <p class="section-sub">四种题型贴合雅思考试场景，自动收集错题并支持反复重做</p>
+
+    <!-- 测验设置 -->
+    <div id="quizSetup">
+      <div class="opt-row">
+        <div class="opt-lab">选择题型</div>
+        <div class="mode-grid" id="modeGrid">
+          <button data-mode="mc">① 英汉选词</button>
+          <button data-mode="fill">② 汉译英填空</button>
+          <button data-mode="listen">③ 听音辨词</button>
+          <button data-mode="sentence">④ 真题例句填空</button>
+        </div>
+      </div>
+      <div class="opt-row">
+        <div class="opt-lab">题目来源</div>
+        <div class="chip-row" id="poolChips">
+          <button data-pool="all" class="active">全部词库</button>
+          <button data-pool="seen">已学过</button>
+          <button data-pool="fav">生词本</button>
+          <button data-pool="wrong">错题本</button>
+        </div>
+      </div>
+      <div class="opt-row">
+        <div class="opt-lab">题目数量</div>
+        <div class="chip-row" id="countChips">
+          <button data-n="10">10 题</button>
+          <button data-n="20" class="active">20 题</button>
+          <button data-n="all">全部</button>
+        </div>
+      </div>
+      <button class="start-btn" id="quizStartBtn">开始测验</button>
+    </div>
+
+    <!-- 答题中 -->
+    <div id="quizRun" class="hidden">
+      <div class="q-progress"><div class="bar" id="qBar" style="width:0%"></div></div>
+      <div class="q-card" id="qBody"></div>
+    </div>
+
+    <!-- 结果页 -->
+    <div id="quizResult" class="hidden"></div>
+  </section>
+
+  <!-- ==================== 视图4：生词本 ==================== -->
+  <section class="view" id="view-fav">
+    <h2 class="section-title">生词本</h2>
+    <p class="section-sub">收藏的生词集中管理，可背诵、导出、打印</p>
+    <div class="toolbar">
+      <span class="info" id="favInfo">共 0 个生词</span>
+      <button id="favPracticeBtn">背诵生词</button>
+      <button id="favExportBtn">导出文本</button>
+      <button id="favPrintBtn">打印</button>
+    </div>
+    <div class="word-list" id="favList"></div>
+  </section>
+
+  <!-- ==================== 视图5：学习数据 ==================== -->
+  <section class="view" id="view-stats">
+    <h2 class="section-title">学习数据</h2>
+    <p class="section-sub">你的背诵量、掌握进度与正确率统计</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="num" id="stToday">0</div><div class="lab">今日背诵</div></div>
+      <div class="stat"><div class="num" id="stMastered">0</div><div class="lab">已掌握</div></div>
+      <div class="stat"><div class="num" id="stAcc">0%</div><div class="lab">总正确率</div></div>
+      <div class="stat"><div class="num" id="stStreak">0</div><div class="lab">连续天数</div></div>
+    </div>
+    <div class="chart-card">
+      <h4>近 7 日背诵量</h4>
+      <div class="bar-chart" id="barChart"></div>
+    </div>
+    <div class="chart-card">
+      <h4>分类掌握进度</h4>
+      <div id="catProg"></div>
+    </div>
+    <div class="chart-card">
+      <h4>错题情况</h4>
+      <div id="wrongStats"></div>
+    </div>
+  </section>
+
+  <!-- ==================== 视图6：设置 ==================== -->
+  <section class="view" id="view-settings">
+    <h2 class="section-title">设置</h2>
+    <p class="section-sub">个性化配置与数据管理</p>
+
+    <div class="setting-card">
+      <h4>外观</h4>
+      <div class="setting-row">
+        <span class="lab">主题模式<small>浅色 / 深色 / 跟随系统</small></span>
+        <select id="themeSel">
+          <option value="light">浅色</option>
+          <option value="dark">深色</option>
+          <option value="auto">跟随系统</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="setting-card">
+      <h4>发音朗读</h4>
+      <div class="setting-row">
+        <span class="lab">默认口音<small>单词发音朗读使用的口音</small></span>
+        <select id="accentSel">
+          <option value="en-GB">英音 (UK)</option>
+          <option value="en-US">美音 (US)</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span class="lab">朗读语速<small>0.5 慢速 — 1.5 快速</small></span>
+        <input type="range" id="rateRange" min="0.5" max="1.5" step="0.1" value="0.9">
+      </div>
+    </div>
+
+    <div class="setting-card">
+      <h4>数据管理</h4>
+      <div class="setting-row">
+        <span class="lab">导出学习数据<small>备份全部记录为 JSON 文件</small></span>
+        <button id="exportDataBtn">导出备份</button>
+      </div>
+      <div class="setting-row">
+        <span class="lab">导入学习数据<small>恢复之前导出的备份</small></span>
+        <button class="ghost" id="importDataBtn">选择文件导入</button>
+        <input type="file" id="importDataFile" accept=".json" style="display:none">
+      </div>
+      <div class="setting-row">
+        <span class="lab">清空学习数据<small>删除全部背诵记录、生词本、错题本（词库保留）</small></span>
+        <button class="danger" id="resetDataBtn">清空全部数据</button>
+      </div>
+    </div>
+
+    <div class="setting-card">
+      <h4>关于</h4>
+      <div class="about-line" id="aboutLine"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ==================== 打印 / 导出弹窗 ==================== -->
+<div class="modal-mask hidden" id="modalMask">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">导出</h3>
+      <button id="modalClose">✕</button>
+    </div>
+    <pre class="modal-body" id="modalBody"></pre>
+    <div class="modal-foot">
+      <button id="modalDownload">下载 .txt</button>
+      <button id="modalPrint">打印</button>
+    </div>
+  </div>
+</div>
+
+<!-- 打印专用区域 -->
+<pre id="printArea"></pre>
+
+<!-- Toast 提示 -->
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+ *  一、词库数据区
+ *  —— 在这里扩充/替换你的雅思单词（详见文末"如何扩充词库"注释）
+ *  每条数据字段说明：
+ *    w  : 英文单词
+ *    uk : 英式音标
+ *    us : 美式音标
+ *    d  : 中文释义
+ *    ex : 雅思风格例句（英文）
+ *    zh : 例句中文翻译
+ *    s  : 同义替换词（数组）
+ *    col: 写作搭配 / 高频搭配
+ *    c  : 所属分类（数组，可选值：听力词汇/阅读词汇/写作高分词/口语高频词/学术难词）
+ * ============================================================ */
+// 雅思高频核心词库（内置 344 个核心词，覆盖五大分类；可继续在末尾追加扩充）
+const WORDS = [
+  /* ============ 听力词汇（校园 / 生活 / 旅行场景高频） ============ */
+  {w:"accommodation", uk:"/əˌkɒməˈdeɪʃn/", us:"/əˌkɑːməˈdeɪʃn/", d:"n. 住宿；膳宿", ex:"University accommodation is limited, so students should apply early.", zh:"大学住宿名额有限，学生应尽早申请。", s:["housing","lodging","residence"], col:"provide accommodation / student accommodation", c:["听力词汇"]},
+  {w:"appointment", uk:"/əˈpɔɪntmənt/", us:"/əˈpɔɪntmənt/", d:"n. 约会；预约；任命", ex:"You need to make an appointment with the dentist before Friday.", zh:"你需要在周五前和牙医预约。", s:["booking","arrangement","meeting"], col:"make an appointment / keep an appointment", c:["听力词汇"]},
+  {w:"assignment", uk:"/əˈsaɪnmənt/", us:"/əˈsaɪnmənt/", d:"n. 作业；任务；分派", ex:"The final assignment counts for thirty percent of the total grade.", zh:"期末作业占总成绩的百分之三十。", s:["task","homework","project"], col:"complete an assignment / hand in an assignment", c:["听力词汇","阅读词汇"]},
+  {w:"attend", uk:"/əˈtend/", us:"/əˈtend/", d:"v. 出席；参加；照料", ex:"Students are required to attend at least eighty percent of lectures.", zh:"学生必须出席至少百分之八十的讲座。", s:["join","take part in","be present at"], col:"attend a lecture / attend a conference", c:["听力词汇","写作高分词"]},
+  {w:"availability", uk:"/əˌveɪləˈbɪləti/", us:"/əˌveɪləˈbɪləti/", d:"n. 可用性；可获得性；空闲", ex:"Please check the availability of rooms for the weekend.", zh:"请查询本周末房间的可预订情况。", s:["accessibility","supply"], col:"check availability / room availability", c:["听力词汇"]},
+  {w:"campus", uk:"/ˈkæmpəs/", us:"/ˈkæmpəs/", d:"n. 校园", ex:"The new library is located in the centre of the campus.", zh:"新图书馆位于校园中心。", s:["university grounds"], col:"on campus / campus life", c:["听力词汇","口语高频词"]},
+  {w:"cafeteria", uk:"/ˌkæfəˈtɪəriə/", us:"/ˌkæfəˈtɪriə/", d:"n. 自助餐厅", ex:"The cafeteria offers a wide range of vegetarian dishes.", zh:"这家自助餐厅提供多种素食菜肴。", s:["canteen","dining hall"], col:"school cafeteria / cafeteria menu", c:["听力词汇"]},
+  {w:"deadline", uk:"/ˈdedlaɪn/", us:"/ˈdedlaɪn/", d:"n. 截止日期；最后期限", ex:"The deadline for submitting the essay is next Monday.", zh:"论文提交的截止日期是下周一。", s:["time limit","cut-off date"], col:"meet the deadline / miss a deadline", c:["听力词汇","写作高分词"]},
+  {w:"deposit", uk:"/dɪˈpɒzɪt/", us:"/dɪˈpɑːzɪt/", d:"n./v. 押金；存款；存放", ex:"A deposit of one month's rent is required when signing the lease.", zh:"签租约时需要支付一个月租金的押金。", s:["down payment","payment"], col:"pay a deposit / deposit money", c:["听力词汇"]},
+  {w:"discount", uk:"/ˈdɪskaʊnt/", us:"/ˈdɪskaʊnt/", d:"n./v. 折扣；打折", ex:"Students can get a ten percent discount at this bookstore.", zh:"学生在这家书店可以享受九折优惠。", s:["reduction","rebate"], col:"offer a discount / student discount", c:["听力词汇","口语高频词"]},
+  {w:"dormitory", uk:"/ˈdɔːmətri/", us:"/ˈdɔːrmətɔːri/", d:"n. 宿舍", ex:"The dormitory is shared by four students on the same floor.", zh:"这间宿舍由同楼层的四名学生共用。", s:["dorm","residence hall"], col:"dormitory building / live in a dormitory", c:["听力词汇"]},
+  {w:"enroll", uk:"/ɪnˈrəʊl/", us:"/ɪnˈroʊl/", d:"v. 注册；入学；报名", ex:"You must enroll in the course before the first lecture.", zh:"你必须在第一节课之前注册这门课程。", s:["register","sign up"], col:"enroll in a course / enroll for classes", c:["听力词汇"]},
+  {w:"facility", uk:"/fəˈsɪləti/", us:"/fəˈsɪləti/", d:"n. 设施；设备；场所", ex:"The sports facility includes a swimming pool and a gym.", zh:"该体育设施包括游泳池和健身房。", s:["equipment","amenity","installation"], col:"sports facilities / public facilities", c:["听力词汇","阅读词汇"]},
+  {w:"feedback", uk:"/ˈfiːdbæk/", us:"/ˈfiːdbæk/", d:"n. 反馈；意见", ex:"Teachers give feedback on essays to help students improve.", zh:"老师会对论文给出反馈以帮助学生提高。", s:["comment","response","criticism"], col:"give feedback / positive feedback", c:["听力词汇","口语高频词"]},
+  {w:"handbook", uk:"/ˈhændbʊk/", us:"/ˈhændbʊk/", d:"n. 手册；指南", ex:"The handbook explains all the regulations of the library.", zh:"这本手册说明了图书馆的所有规定。", s:["manual","guidebook"], col:"student handbook / reference handbook", c:["听力词汇"]},
+  {w:"hostel", uk:"/ˈhɒstl/", us:"/ˈhɑːstl/", d:"n. 旅舍；青年旅社；招待所", ex:"We stayed in a youth hostel to save money on the trip.", zh:"旅行中我们住青年旅社以节省开销。", s:["lodging","inn"], col:"youth hostel / backpacker hostel", c:["听力词汇"]},
+  {w:"insurance", uk:"/ɪnˈʃʊərəns/", us:"/ɪnˈʃʊrəns/", d:"n. 保险", ex:"Travel insurance covers medical expenses during the trip.", zh:"旅行保险覆盖旅行期间的医疗费用。", s:["coverage","protection"], col:"take out insurance / insurance policy", c:["听力词汇","阅读词汇"]},
+  {w:"invoice", uk:"/ˈɪnvɔɪs/", us:"/ˈɪnvɔɪs/", d:"n./v. 发票；开具发票", ex:"Please send the invoice to our finance department.", zh:"请把发票发送到我们的财务部门。", s:["bill","receipt"], col:"issue an invoice / pay an invoice", c:["听力词汇"]},
+  {w:"itinerary", uk:"/aɪˈtɪnərəri/", us:"/aɪˈtɪnəreri/", d:"n. 行程；旅行计划", ex:"The tour itinerary includes visits to three historic cities.", zh:"旅行行程包括参观三座历史名城。", s:["schedule","route","plan"], col:"travel itinerary / detailed itinerary", c:["听力词汇"]},
+  {w:"laboratory", uk:"/ləˈbɒrətri/", us:"/ˈlæbrətɔːri/", d:"n. 实验室", ex:"Experiments must be carried out in a well-equipped laboratory.", zh:"实验必须在设备完善的实验室中进行。", s:["lab","research centre"], col:"laboratory experiment / laboratory equipment", c:["听力词汇","学术难词"]},
+  {w:"lecture", uk:"/ˈlektʃə(r)/", us:"/ˈlektʃər/", d:"n./v. 讲座；演讲", ex:"The guest professor delivered a lecture on climate change.", zh:"客座教授就气候变化发表了一场讲座。", s:["talk","speech","presentation"], col:"attend a lecture / deliver a lecture", c:["听力词汇"]},
+  {w:"library", uk:"/ˈlaɪbrəri/", us:"/ˈlaɪbreri/", d:"n. 图书馆；藏书室", ex:"The library stays open until midnight during exam week.", zh:"考试周期间图书馆开放到午夜。", s:["book collection"], col:"library card / borrow books from the library", c:["听力词汇"]},
+  {w:"loan", uk:"/ləʊn/", us:"/loʊn/", d:"n./v. 贷款；借款；借出", ex:"Many students take out a loan to cover their tuition fees.", zh:"许多学生贷款支付学费。", s:["credit","borrowing"], col:"student loan / apply for a loan", c:["听力词汇","阅读词汇"]},
+  {w:"luggage", uk:"/ˈlʌɡɪdʒ/", us:"/ˈlʌɡɪdʒ/", d:"n. 行李", ex:"Passengers are allowed to carry one piece of hand luggage.", zh:"乘客可携带一件手提行李。", s:["baggage","bags"], col:"hand luggage / luggage allowance", c:["听力词汇"]},
+  {w:"maintenance", uk:"/ˈmeɪntənəns/", us:"/ˈmeɪntənəns/", d:"n. 维护；保养；维持", ex:"Regular maintenance of equipment prevents costly breakdowns.", zh:"定期维护设备可以避免昂贵的故障。", s:["upkeep","repair","service"], col:"maintenance cost / routine maintenance", c:["听力词汇","阅读词汇"]},
+  {w:"mandatory", uk:"/ˈmændətəri/", us:"/ˈmændətɔːri/", d:"adj. 强制的；法定的", ex:"Attendance at the orientation is mandatory for all new students.", zh:"所有新生都必须参加入学说明会。", s:["compulsory","required","obligatory"], col:"mandatory requirement / be mandatory for", c:["听力词汇","学术难词"]},
+  {w:"optional", uk:"/ˈɒpʃənl/", us:"/ˈɑːpʃənl/", d:"adj. 可选的；非强制性的", ex:"The field trip is optional, but it is highly recommended.", zh:"实地考察是可选的，但强烈推荐参加。", s:["elective","voluntary"], col:"optional course / optional module", c:["听力词汇"]},
+  {w:"register", uk:"/ˈredʒɪstə(r)/", us:"/ˈredʒɪstər/", d:"v./n. 登记；注册；登记表", ex:"Students must register for courses online before the term starts.", zh:"学生必须在学期开始前在线注册课程。", s:["enroll","sign up","record"], col:"register for a course / register online", c:["听力词汇"]},
+  {w:"requirement", uk:"/rɪˈkwaɪəmənt/", us:"/rɪˈkwaɪərmənt/", d:"n. 要求；必要条件", ex:"A language certificate is a basic requirement for this programme.", zh:"语言证书是该项目的必要条件。", s:["condition","prerequisite","demand"], col:"meet the requirements / entry requirements", c:["听力词汇","写作高分词"]},
+  {w:"reservation", uk:"/ˌrezəˈveɪʃn/", us:"/ˌrezərˈveɪʃn/", d:"n. 预订；保留", ex:"I'd like to make a reservation for two people tonight.", zh:"我想预订今晚两人的座位。", s:["booking"], col:"make a reservation / cancel a reservation", c:["听力词汇"]},
+  {w:"scholarship", uk:"/ˈskɒləʃɪp/", us:"/ˈskɑːlərʃɪp/", d:"n. 奖学金；学问", ex:"She won a full scholarship to study abroad.", zh:"她获得了出国留学的全额奖学金。", s:["grant","funding","award"], col:"win a scholarship / apply for a scholarship", c:["听力词汇","口语高频词"]},
+  {w:"semester", uk:"/sɪˈmestə(r)/", us:"/sɪˈmestər/", d:"n. 学期", ex:"The course runs for one full semester, from September to January.", zh:"这门课程持续整个学期，从九月到一月。", s:["term"], col:"first semester / spring semester", c:["听力词汇"]},
+  {w:"seminar", uk:"/ˈsemɪnɑː(r)/", us:"/ˈsemɪnɑːr/", d:"n. 研讨会；研讨课", ex:"Each seminar is limited to fifteen students to encourage discussion.", zh:"每次研讨课限制十五名学生以鼓励讨论。", s:["workshop","conference"], col:"attend a seminar / seminar group", c:["听力词汇","学术难词"]},
+  {w:"timetable", uk:"/ˈtaɪmteɪbl/", us:"/ˈtaɪmteɪbl/", d:"n. 时间表；课程表", ex:"You can download the lecture timetable from the website.", zh:"你可以从网站下载讲座时间表。", s:["schedule","programme"], col:"bus timetable / weekly timetable", c:["听力词汇"]},
+  {w:"tutorial", uk:"/tjuːˈtɔːriəl/", us:"/tuːˈtɔːriəl/", d:"n. 辅导课；教程", ex:"Tutorials give students a chance to discuss topics in small groups.", zh:"辅导课让学生有机会进行小组讨论。", s:["coaching","lesson"], col:"tutorial session / online tutorial", c:["听力词汇"]},
+  {w:"tuition", uk:"/tjuˈɪʃn/", us:"/tuˈɪʃn/", d:"n. 学费；教学", ex:"Tuition fees have risen sharply over the past decade.", zh:"过去十年学费大幅上涨。", s:["school fees","teaching"], col:"tuition fees / pay tuition", c:["听力词汇","写作高分词"]},
+  {w:"visa", uk:"/ˈviːzə/", us:"/ˈviːzə/", d:"n. 签证", ex:"You should apply for your student visa well in advance.", zh:"你应该提前申请学生签证。", s:["entry permit"], col:"student visa / apply for a visa", c:["听力词汇"]},
+  {w:"voucher", uk:"/ˈvaʊtʃə(r)/", us:"/ˈvaʊtʃər/", d:"n. 代金券；凭证", ex:"Each participant will receive a discount voucher for the museum.", zh:"每位参与者将获得一张博物馆优惠券。", s:["coupon","token"], col:"gift voucher / discount voucher", c:["听力词汇"]},
+  {w:"withdraw", uk:"/wɪðˈdrɔː/", us:"/wɪðˈdrɔː/", d:"v. 取款；撤回；退出", ex:"You can withdraw up to two hundred dollars a day from this ATM.", zh:"你每天可以从这台自动取款机取款两百美元。", s:["remove","take out","retreat"], col:"withdraw money / withdraw from a competition", c:["听力词汇","阅读词汇"]},
+  {w:"abroad", uk:"/əˈbrɔːd/", us:"/əˈbrɔːd/", d:"adv. 在国外；到国外", ex:"Studying abroad broadens students' horizons and independence.", zh:"出国留学能开阔学生的视野并培养独立性。", s:["overseas"], col:"study abroad / go abroad", c:["听力词汇","口语高频词"]},
+  {w:"arrange", uk:"/əˈreɪndʒ/", us:"/əˈreɪndʒ/", d:"v. 安排；整理", ex:"The university will arrange transport from the airport for new students.", zh:"大学会为新生安排机场接机。", s:["organise","plan","set up"], col:"arrange a meeting / arrange accommodation", c:["听力词汇","写作高分词"]},
+  {w:"delay", uk:"/dɪˈleɪ/", us:"/dɪˈleɪ/", d:"n./v. 延误；推迟", ex:"The flight was delayed by two hours because of the storm.", zh:"由于暴风雨，航班延误了两个小时。", s:["postpone","put off","hold up"], col:"flight delay / be delayed by", c:["听力词汇"]},
+  {w:"departure", uk:"/dɪˈpɑːtʃə(r)/", us:"/dɪˈpɑːrtʃər/", d:"n. 出发；离开", ex:"Please check the departure time printed on your boarding pass.", zh:"请核对登机牌上打印的出发时间。", s:["take-off","leaving"], col:"departure time / point of departure", c:["听力词汇"]},
+
+  /* ============ 阅读词汇（学术阅读 / 客观说明文高频） ============ */
+  {w:"analyse", uk:"/ˈænəlaɪz/", us:"/ˈænəlaɪz/", d:"v. 分析", ex:"Researchers analysed the data collected from two thousand participants.", zh:"研究人员分析了从两千名参与者那里收集的数据。", s:["examine","study","evaluate"], col:"analyse data / analyse the results", c:["阅读词汇","写作高分词","学术难词"]},
+  {w:"approach", uk:"/əˈprəʊtʃ/", us:"/əˈproʊtʃ/", d:"n./v. 方法；接近；处理", ex:"The new approach proved more effective than traditional methods.", zh:"这种新方法被证明比传统方法更有效。", s:["method","strategy","tackle"], col:"an approach to / adopt an approach", c:["阅读词汇","写作高分词"]},
+  {w:"assessment", uk:"/əˈsesmənt/", us:"/əˈsesmənt/", d:"n. 评估；评价", ex:"Continuous assessment is used to measure students' progress.", zh:"使用持续评估来衡量学生的进步。", s:["evaluation","judgement"], col:"risk assessment / assessment criteria", c:["阅读词汇","学术难词"]},
+  {w:"assumption", uk:"/əˈsʌmpʃn/", us:"/əˈsʌmpʃn/", d:"n. 假设；假定", ex:"The theory is based on the assumption that resources are unlimited.", zh:"该理论基于资源无限的假设。", s:["hypothesis","supposition"], col:"make an assumption / underlying assumption", c:["阅读词汇","学术难词"]},
+  {w:"category", uk:"/ˈkætəɡəri/", us:"/ˈkætəɡɔːri/", d:"n. 类别；范畴", ex:"The animals are divided into several categories according to size.", zh:"这些动物按体型分为几个类别。", s:["class","group","type"], col:"fall into a category / age category", c:["阅读词汇"]},
+  {w:"circumstance", uk:"/ˈsɜːkəmstəns/", us:"/ˈsɜːrkəmstæns/", d:"n. 情况；环境；境况", ex:"Under no circumstances should you submit the report late.", zh:"无论如何你都不应迟交报告。", s:["situation","condition","context"], col:"under the circumstances / in any circumstances", c:["阅读词汇","写作高分词"]},
+  {w:"component", uk:"/kəmˈpəʊnənt/", us:"/kəmˈpoʊnənt/", d:"n. 组成部分；部件", ex:"Each component of the system must be tested separately.", zh:"系统的每个组件都必须单独测试。", s:["part","element","unit"], col:"key component / component parts", c:["阅读词汇","学术难词"]},
+  {w:"concept", uk:"/ˈkɒnsept/", us:"/ˈkɑːnsept/", d:"n. 概念；观念", ex:"The concept of sustainability is central to modern urban planning.", zh:"可持续性概念是现代城市规划的核心。", s:["idea","notion","principle"], col:"key concept / grasp a concept", c:["阅读词汇","学术难词"]},
+  {w:"consequence", uk:"/ˈkɒnsɪkwəns/", us:"/ˈkɑːnsəkwens/", d:"n. 后果；结果", ex:"Climate change has serious consequences for coastal communities.", zh:"气候变化对沿海社区造成严重后果。", s:["result","outcome","effect"], col:"as a consequence / face the consequences", c:["阅读词汇","写作高分词"]},
+  {w:"considerable", uk:"/kənˈsɪdərəbl/", us:"/kənˈsɪdərəbl/", d:"adj. 相当大的；可观的", ex:"A considerable amount of money was spent on the new hospital.", zh:"新医院花费了相当大的一笔钱。", s:["substantial","significant","sizable"], col:"considerable amount / considerable influence", c:["阅读词汇","写作高分词"]},
+  {w:"constant", uk:"/ˈkɒnstənt/", us:"/ˈkɑːnstənt/", d:"adj. 持续的；恒定的；不断的", ex:"The machine requires constant maintenance to run smoothly.", zh:"这台机器需要持续维护才能平稳运行。", s:["continuous","continual","stable"], col:"constant attention / constant change", c:["阅读词汇"]},
+  {w:"construct", uk:"/kənˈstrʌkt/", us:"/kənˈstrʌkt/", d:"v. 构建；建造", ex:"Engineers constructed a bridge across the wide river.", zh:"工程师们在宽阔的河上架起了一座桥。", s:["build","erect","establish"], col:"construct a building / construct a theory", c:["阅读词汇"]},
+  {w:"context", uk:"/ˈkɒntekst/", us:"/ˈkɑːntekst/", d:"n. 语境；背景；上下文", ex:"The meaning of a word depends on the context in which it appears.", zh:"词义取决于它出现的语境。", s:["background","setting"], col:"in the context of / social context", c:["阅读词汇","学术难词"]},
+  {w:"contrast", uk:"/ˈkɒntrɑːst/", us:"/ˈkɑːntræst/", d:"n./v. 对比；对照", ex:"In contrast to previous studies, this research found no clear link.", zh:"与先前的研究相比，这项研究发现没有明确关联。", s:["comparison","difference"], col:"in contrast to / by contrast", c:["阅读词汇","写作高分词"]},
+  {w:"contribute", uk:"/kənˈtrɪbjuːt/", us:"/kənˈtrɪbjuːt/", d:"v. 贡献；促成；导致", ex:"Several factors contribute to the decline in reading habits.", zh:"多种因素导致了阅读习惯的下降。", s:["lead to","add to","play a part"], col:"contribute to / contribute funds", c:["阅读词汇","写作高分词"]},
+  {w:"crucial", uk:"/ˈkruːʃl/", us:"/ˈkruːʃl/", d:"adj. 至关重要的；关键的", ex:"Early diagnosis is crucial to the success of the treatment.", zh:"早期诊断对治疗成功至关重要。", s:["vital","essential","critical"], col:"play a crucial role / be crucial for", c:["阅读词汇","写作高分词"]},
+  {w:"data", uk:"/ˈdeɪtə/", us:"/ˈdeɪtə/", d:"n. 数据；资料", ex:"The data from the survey support the researchers' hypothesis.", zh:"调查数据支持了研究人员的假设。", s:["statistics","figures","information"], col:"collect data / analyse data", c:["阅读词汇","学术难词"]},
+  {w:"define", uk:"/dɪˈfaɪn/", us:"/dɪˈfaɪn/", d:"v. 定义；界定", ex:"It is difficult to define happiness in a single sentence.", zh:"很难用一句话定义幸福。", s:["describe","explain","specify"], col:"define a term / clearly defined", c:["阅读词汇","写作高分词"]},
+  {w:"demonstrate", uk:"/ˈdemənstreɪt/", us:"/ˈdemənstreɪt/", d:"v. 证明；展示；演示", ex:"The experiment demonstrates that light travels in straight lines.", zh:"实验证明光沿直线传播。", s:["prove","show","illustrate"], col:"demonstrate the importance / demonstrate how", c:["阅读词汇","写作高分词","学术难词"]},
+  {w:"derive", uk:"/dɪˈraɪv/", us:"/dɪˈraɪv/", d:"v. 源于；获得", ex:"Many English words derive from Latin and Greek.", zh:"许多英语单词源自拉丁语和希腊语。", s:["originate","obtain","come from"], col:"derive from / derive benefit from", c:["阅读词汇","学术难词"]},
+  {w:"distribute", uk:"/dɪˈstrɪbjuːt/", us:"/dɪˈstrɪbjuːt/", d:"v. 分配；分发；分布", ex:"The charity distributes food to families in need every week.", zh:"该慈善机构每周向有需要的家庭分发食物。", s:["hand out","allocate","spread"], col:"distribute resources / distribute evenly", c:["阅读词汇"]},
+  {w:"environment", uk:"/ɪnˈvaɪrənmənt/", us:"/ɪnˈvaɪrənmənt/", d:"n. 环境", ex:"Protecting the environment requires action from every individual.", zh:"保护环境需要每个人的行动。", s:["surroundings","habitat"], col:"protect the environment / learning environment", c:["阅读词汇","写作高分词"]},
+  {w:"establish", uk:"/ɪˈstæblɪʃ/", us:"/ɪˈstæblɪʃ/", d:"v. 建立；确立；证实", ex:"The university was established in 1890 and has a long history.", zh:"这所大学建于1890年，历史悠久。", s:["set up","found","create"], col:"establish a system / establish contact", c:["阅读词汇","写作高分词"]},
+  {w:"evaluate", uk:"/ɪˈvæljueɪt/", us:"/ɪˈvæljueɪt/", d:"v. 评估；评价", ex:"It is important to evaluate the results before drawing conclusions.", zh:"在下结论前评估结果很重要。", s:["assess","appraise","judge"], col:"evaluate the impact / evaluate performance", c:["阅读词汇","学术难词"]},
+  {w:"evidence", uk:"/ˈevɪdəns/", us:"/ˈevɪdəns/", d:"n. 证据；迹象", ex:"There is growing evidence that exercise improves mental health.", zh:"越来越多的证据表明运动能改善心理健康。", s:["proof","sign","indication"], col:"provide evidence / scientific evidence", c:["阅读词汇","写作高分词"]},
+  {w:"factor", uk:"/ˈfæktə(r)/", us:"/ˈfæktər/", d:"n. 因素；要素", ex:"Cost is an important factor when choosing a place to live.", zh:"成本是选择居住地点时的一个重要因素。", s:["element","cause","aspect"], col:"a key factor / contributing factor", c:["阅读词汇","写作高分词"]},
+  {w:"focus", uk:"/ˈfəʊkəs/", us:"/ˈfoʊkəs/", d:"v./n. 聚焦；集中；重点", ex:"The report focuses on the impact of tourism on local culture.", zh:"这份报告关注旅游业对当地文化的影响。", s:["concentrate","centre","emphasis"], col:"focus on / main focus", c:["阅读词汇","写作高分词"]},
+  {w:"function", uk:"/ˈfʌŋkʃn/", us:"/ˈfʌŋkʃn/", d:"n./v. 功能；运作；起作用", ex:"The main function of the device is to measure air quality.", zh:"该设备的主要功能是测量空气质量。", s:["role","purpose","operate"], col:"perform a function / function as", c:["阅读词汇"]},
+  {w:"hypothesis", uk:"/haɪˈpɒθəsɪs/", us:"/haɪˈpɑːθəsɪs/", d:"n. 假说；假设", ex:"The experiment was designed to test the researchers' hypothesis.", zh:"该实验旨在检验研究人员的假说。", s:["theory","assumption","proposition"], col:"test a hypothesis / form a hypothesis", c:["阅读词汇","学术难词"]},
+  {w:"identify", uk:"/aɪˈdentɪfaɪ/", us:"/aɪˈdentɪfaɪ/", d:"v. 识别；确认；找出", ex:"The study aims to identify the causes of urban congestion.", zh:"这项研究旨在找出城市拥堵的原因。", s:["recognise","detect","pinpoint"], col:"identify a problem / identify the causes", c:["阅读词汇","写作高分词"]},
+  {w:"impact", uk:"/ˈɪmpækt/", us:"/ˈɪmpækt/", d:"n./v. 影响；冲击", ex:"Technology has had a profound impact on the way we work.", zh:"科技对我们的工作方式产生了深远影响。", s:["effect","influence"], col:"have an impact on / negative impact", c:["阅读词汇","写作高分词"]},
+  {w:"indicate", uk:"/ˈɪndɪkeɪt/", us:"/ˈɪndɪkeɪt/", d:"v. 表明；指示；暗示", ex:"The results indicate that the new method is more efficient.", zh:"结果表明新方法更高效。", s:["show","suggest","point to"], col:"indicate that / as indicated by", c:["阅读词汇","学术难词"]},
+  {w:"individual", uk:"/ˌɪndɪˈvɪdʒuəl/", us:"/ˌɪndɪˈvɪdʒuəl/", d:"n./adj. 个人；个体的", ex:"Each individual has a responsibility to reduce waste.", zh:"每个人都有责任减少浪费。", s:["person","single","personal"], col:"individual needs / as an individual", c:["阅读词汇","写作高分词"]},
+  {w:"interpret", uk:"/ɪnˈtɜːprɪt/", us:"/ɪnˈtɜːrprɪt/", d:"v. 解释；理解；口译", ex:"The results can be interpreted in several different ways.", zh:"这些结果可以有几种不同的解释。", s:["explain","construe","translate"], col:"interpret data / interpret a text", c:["阅读词汇","学术难词"]},
+  {w:"investigate", uk:"/ɪnˈvestɪɡeɪt/", us:"/ɪnˈvestɪɡeɪt/", d:"v. 调查；研究", ex:"Scientists are investigating the effects of noise pollution on sleep.", zh:"科学家正在研究噪音污染对睡眠的影响。", s:["examine","explore","research"], col:"investigate the causes / investigate a claim", c:["阅读词汇","学术难词"]},
+  {w:"issue", uk:"/ˈɪʃuː/", us:"/ˈɪʃuː/", d:"n. 问题；议题 v. 发布", ex:"Environmental issues are frequently discussed in the media.", zh:"环境问题在媒体上被频繁讨论。", s:["problem","matter","topic"], col:"address an issue / current issues", c:["阅读词汇","写作高分词"]},
+  {w:"method", uk:"/ˈmeθəd/", us:"/ˈmeθəd/", d:"n. 方法；办法", ex:"The researchers used a new method to analyse the samples.", zh:"研究人员使用一种新方法分析样本。", s:["approach","technique","way"], col:"research method / adopt a method", c:["阅读词汇","学术难词"]},
+  {w:"obtain", uk:"/əbˈteɪn/", us:"/əbˈteɪn/", d:"v. 获得；得到", ex:"Applicants must obtain permission before conducting the survey.", zh:"申请人必须先获得许可才能开展调查。", s:["get","acquire","gain"], col:"obtain information / obtain a degree", c:["阅读词汇","写作高分词"]},
+  {w:"occur", uk:"/əˈkɜː(r)/", us:"/əˈkɜːr/", d:"v. 发生；出现；想到", ex:"Most accidents occur when drivers are distracted.", zh:"大多数事故发生在司机分心时。", s:["happen","take place","arise"], col:"occur during / it occurs to sb", c:["阅读词汇","写作高分词"]},
+  {w:"particular", uk:"/pəˈtɪkjələ(r)/", us:"/pərˈtɪkjələr/", d:"adj. 特定的；特别的", ex:"We need to pay particular attention to the details of the contract.", zh:"我们需要特别注意合同的细节。", s:["specific","special","distinct"], col:"in particular / particular attention", c:["阅读词汇"]},
+  {w:"phenomenon", uk:"/fəˈnɒmɪnən/", us:"/fəˈnɑːmɪnən/", d:"n. 现象", ex:"Urbanisation is a global phenomenon affecting most countries.", zh:"城市化是影响大多数国家的全球性现象。", s:["occurrence","event"], col:"a common phenomenon / natural phenomenon", c:["阅读词汇","学术难词"]},
+  {w:"policy", uk:"/ˈpɒləsi/", us:"/ˈpɑːləsi/", d:"n. 政策；方针", ex:"The government introduced a new policy to reduce carbon emissions.", zh:"政府出台了一项减少碳排放的新政策。", s:["strategy","regulation","guideline"], col:"government policy / implement a policy", c:["阅读词汇","写作高分词"]},
+  {w:"principle", uk:"/ˈprɪnsəpl/", us:"/ˈprɪnsəpl/", d:"n. 原则；原理", ex:"The system works on the principle of supply and demand.", zh:"该系统按供求原理运作。", s:["rule","doctrine","belief"], col:"in principle / basic principle", c:["阅读词汇","学术难词"]},
+  {w:"process", uk:"/ˈprəʊses/", us:"/ˈprɑːses/", d:"n./v. 过程；处理", ex:"Learning a language is a gradual process that takes time.", zh:"学习语言是一个需要时间的渐进过程。", s:["procedure","course","handle"], col:"learning process / go through a process", c:["阅读词汇","写作高分词"]},
+  {w:"require", uk:"/rɪˈkwaɪə(r)/", us:"/rɪˈkwaɪər/", d:"v. 需要；要求", ex:"This position requires at least two years of work experience.", zh:"这个职位要求至少两年工作经验。", s:["need","demand","call for"], col:"require sth of sb / be required to", c:["阅读词汇","写作高分词"]},
+  {w:"research", uk:"/rɪˈsɜːtʃ/", us:"/rɪˈsɜːrtʃ/", d:"n./v. 研究", ex:"Further research is needed to confirm these findings.", zh:"需要进一步研究来证实这些发现。", s:["study","investigation","enquiry"], col:"conduct research / research findings", c:["阅读词汇","学术难词"]},
+  {w:"resource", uk:"/rɪˈsɔːs/", us:"/ˈriːsɔːrs/", d:"n. 资源", ex:"Water is a precious resource that must be conserved.", zh:"水是必须节约的宝贵资源。", s:["supply","asset","material"], col:"natural resources / limited resources", c:["阅读词汇","写作高分词"]},
+  {w:"respond", uk:"/rɪˈspɒnd/", us:"/rɪˈspɑːnd/", d:"v. 回应；作出反应", ex:"The company responded quickly to customers' complaints.", zh:"公司对顾客的投诉迅速作出了回应。", s:["reply","answer","react"], col:"respond to / respond positively", c:["阅读词汇","口语高频词"]},
+  {w:"significant", uk:"/sɪɡˈnɪfɪkənt/", us:"/sɪɡˈnɪfɪkənt/", d:"adj. 重要的；显著的", ex:"There has been a significant increase in online learning.", zh:"在线学习有显著增长。", s:["important","notable","considerable"], col:"significant impact / a significant difference", c:["阅读词汇","写作高分词"]},
+  {w:"source", uk:"/sɔːs/", us:"/sɔːrs/", d:"n. 来源；出处；源头", ex:"The report lists all the sources used in the research.", zh:"报告列出了研究中使用的所有来源。", s:["origin","resource","reference"], col:"source of income / reliable source", c:["阅读词汇"]},
+  {w:"specific", uk:"/spəˈsɪfɪk/", us:"/spəˈsɪfɪk/", d:"adj. 具体的；特定的", ex:"Please provide specific examples to support your argument.", zh:"请提供具体例子来支持你的论点。", s:["particular","exact","precise"], col:"specific needs / specific details", c:["阅读词汇","写作高分词"]},
+  {w:"structure", uk:"/ˈstrʌktʃə(r)/", us:"/ˈstrʌktʃər/", d:"n./v. 结构；组织", ex:"The essay should have a clear structure with an introduction and conclusion.", zh:"文章应有清晰的结构，包括引言和结论。", s:["framework","organisation","layout"], col:"social structure / structure an essay", c:["阅读词汇","写作高分词"]},
+  {w:"survey", uk:"/ˈsɜːveɪ/", us:"/ˈsɜːrveɪ/", d:"n./v. 调查；测量", ex:"According to a recent survey, most students prefer flexible study hours.", zh:"根据最近一项调查，大多数学生更喜欢灵活的学习时间。", s:["questionnaire","poll","study"], col:"conduct a survey / survey results", c:["阅读词汇","口语高频词"]},
+  {w:"theory", uk:"/ˈθɪəri/", us:"/ˈθiːəri/", d:"n. 理论；学说", ex:"The theory was put forward by a British scientist in the 1950s.", zh:"这一理论由一位英国科学家在20世纪50年代提出。", s:["hypothesis","principle"], col:"theory of / put forward a theory", c:["阅读词汇","学术难词"]},
+  {w:"various", uk:"/ˈveəriəs/", us:"/ˈveriəs/", d:"adj. 各种各样的；不同的", ex:"The museum displays objects from various historical periods.", zh:"博物馆展出来自不同历史时期的物品。", s:["diverse","different","assorted"], col:"various kinds of / for various reasons", c:["阅读词汇","写作高分词"]},
+  /* ============ 写作高分词（Task2 论证 / 高分替换） ============ */
+  {w:"achieve", uk:"/əˈtʃiːv/", us:"/əˈtʃiːv/", d:"v. 实现；达到；取得", ex:"Hard work is essential if students want to achieve good results.", zh:"学生若想取得好成绩，努力是必不可少的。", s:["accomplish","attain","reach"], col:"achieve a goal / achieve success", c:["写作高分词"]},
+  {w:"advantage", uk:"/ədˈvɑːntɪdʒ/", us:"/ədˈvæntɪdʒ/", d:"n. 优势；有利条件", ex:"Working from home has both advantages and disadvantages.", zh:"在家办公既有优点也有缺点。", s:["benefit","merit","strength"], col:"take advantage of / competitive advantage", c:["写作高分词","口语高频词"]},
+  {w:"advocate", uk:"/ˈædvəkeɪt/", us:"/ˈædvəkeɪt/", d:"v. 提倡；主张 n. 拥护者", ex:"Many experts advocate a balanced diet combined with regular exercise.", zh:"许多专家提倡均衡饮食与规律运动相结合。", s:["support","recommend","promote"], col:"advocate for / strong advocate", c:["写作高分词","学术难词"]},
+  {w:"allocate", uk:"/ˈæləkeɪt/", us:"/ˈæləkeɪt/", d:"v. 分配；划拨", ex:"The government should allocate more funds to public education.", zh:"政府应把更多资金拨给公共教育。", s:["assign","distribute","allot"], col:"allocate resources / allocate time", c:["写作高分词"]},
+  {w:"alternative", uk:"/ɔːlˈtɜːnətɪv/", us:"/ɔːlˈtɜːrnətɪv/", d:"n./adj. 替代方案；可替代的", ex:"Public transport offers a cheaper alternative to driving.", zh:"公共交通是比开车更便宜的替代选择。", s:["option","substitute","choice"], col:"an alternative to / alternative energy", c:["写作高分词","阅读词汇"]},
+  {w:"beneficial", uk:"/ˌbenɪˈfɪʃl/", us:"/ˌbenɪˈfɪʃl/", d:"adj. 有益的；有利的", ex:"Reading widely is beneficial to the development of critical thinking.", zh:"广泛阅读有益于批判性思维的发展。", s:["helpful","advantageous","favourable"], col:"be beneficial to / mutually beneficial", c:["写作高分词"]},
+  {w:"broaden", uk:"/ˈbrɔːdn/", us:"/ˈbrɔːdn/", d:"v. 拓宽；扩大", ex:"Travelling can broaden people's horizons and understanding of other cultures.", zh:"旅行可以开阔人们的视野并加深对其他文化的理解。", s:["widen","expand","extend"], col:"broaden one's horizons / broaden the scope", c:["写作高分词","口语高频词"]},
+  {w:"comprehensive", uk:"/ˌkɒmprɪˈhensɪv/", us:"/ˌkɑːmprɪˈhensɪv/", d:"adj. 全面的；综合的", ex:"The report provides a comprehensive analysis of the local economy.", zh:"该报告对当地经济进行了全面分析。", s:["thorough","complete","extensive"], col:"comprehensive review / comprehensive plan", c:["写作高分词","学术难词"]},
+  {w:"diminish", uk:"/dɪˈmɪnɪʃ/", us:"/dɪˈmɪnɪʃ/", d:"v. 减少；削弱", ex:"Public funding cuts would diminish the quality of education.", zh:"公共经费削减会降低教育质量。", s:["reduce","decrease","weaken"], col:"diminish the importance / gradually diminish", c:["写作高分词","学术难词"]},
+  {w:"economic", uk:"/ˌiːkəˈnɒmɪk/", us:"/ˌiːkəˈnɑːmɪk/", d:"adj. 经济的；经济上的", ex:"Economic growth should not come at the expense of the environment.", zh:"经济增长不应以牺牲环境为代价。", s:["financial","monetary"], col:"economic growth / economic development", c:["写作高分词","阅读词汇"]},
+  {w:"effective", uk:"/ɪˈfektɪv/", us:"/ɪˈfektɪv/", d:"adj. 有效的；生效的", ex:"Regular review is an effective way to memorise new vocabulary.", zh:"定期复习是记忆新词汇的有效方法。", s:["efficient","successful","fruitful"], col:"effective method / effective solution", c:["写作高分词"]},
+  {w:"efficient", uk:"/ɪˈfɪʃnt/", us:"/ɪˈfɪʃnt/", d:"adj. 高效的；效率高的", ex:"An efficient public transport system can reduce traffic congestion.", zh:"高效公共交通系统可以减少交通拥堵。", s:["effective","productive","organised"], col:"efficient use of / energy-efficient", c:["写作高分词"]},
+  {w:"emphasize", uk:"/ˈemfəsaɪz/", us:"/ˈemfəsaɪz/", d:"v. 强调；重视", ex:"The author emphasizes the importance of preserving traditional culture.", zh:"作者强调保护传统文化的重要性。", s:["stress","highlight","underline"], col:"emphasize the importance / strongly emphasize", c:["写作高分词"]},
+  {w:"enhance", uk:"/ɪnˈhɑːns/", us:"/ɪnˈhæns/", d:"v. 增强；提高；改善", ex:"Technology can enhance the quality of online education.", zh:"技术可以提高在线教育的质量。", s:["improve","boost","strengthen"], col:"enhance the quality / enhance efficiency", c:["写作高分词"]},
+  {w:"ensure", uk:"/ɪnˈʃʊə(r)/", us:"/ɪnˈʃʊr/", d:"v. 确保；保证", ex:"Parents should ensure that children have enough sleep every night.", zh:"父母应确保孩子每晚有充足的睡眠。", s:["guarantee","make sure","secure"], col:"ensure that / ensure safety", c:["写作高分词"]},
+  {w:"evident", uk:"/ˈevɪdənt/", us:"/ˈevɪdənt/", d:"adj. 明显的；显而易见的", ex:"It is evident that the city has invested heavily in public transport.", zh:"显而易见，这座城市在公共交通上投入巨大。", s:["obvious","clear","apparent"], col:"it is evident that / be evident in", c:["写作高分词","阅读词汇"]},
+  {w:"facilitate", uk:"/fəˈsɪlɪteɪt/", us:"/fəˈsɪlɪteɪt/", d:"v. 促进；使便利", ex:"The internet facilitates communication between people across the world.", zh:"互联网促进了世界各地人们的交流。", s:["promote","ease","assist"], col:"facilitate communication / facilitate access to", c:["写作高分词","学术难词"]},
+  {w:"fundamental", uk:"/ˌfʌndəˈmentl/", us:"/ˌfʌndəˈmentl/", d:"adj. 根本的；基本的", ex:"There is a fundamental difference between the two approaches.", zh:"这两种方法之间存在着根本性差异。", s:["basic","essential","primary"], col:"fundamental change / fundamental rights", c:["写作高分词","学术难词"]},
+  {w:"implement", uk:"/ˈɪmplɪment/", us:"/ˈɪmplɪment/", d:"v. 实施；执行", ex:"The new traffic rules will be implemented from next month.", zh:"新交通规则将从下个月开始实施。", s:["carry out","execute","apply"], col:"implement a policy / implement changes", c:["写作高分词","学术难词"]},
+  {w:"implication", uk:"/ˌɪmplɪˈkeɪʃn/", us:"/ˌɪmplɪˈkeɪʃn/", d:"n. 影响；含义；暗示", ex:"The study has important implications for public health policy.", zh:"这项研究对公共卫生政策有重要影响。", s:["consequence","significance","meaning"], col:"implications for / practical implications", c:["写作高分词","学术难词"]},
+  {w:"inadequate", uk:"/ɪnˈædɪkwət/", us:"/ɪnˈædɪkwət/", d:"adj. 不足的；不充分的", ex:"Inadequate funding is a major obstacle to improving schools.", zh:"资金不足是改善学校的主要障碍。", s:["insufficient","deficient","lacking"], col:"inadequate resources / inadequate preparation", c:["写作高分词","学术难词"]},
+  {w:"inevitable", uk:"/ɪnˈevɪtəbl/", us:"/ɪnˈevɪtəbl/", d:"adj. 不可避免的；必然的", ex:"Some degree of change is inevitable in any growing city.", zh:"任何发展中的城市都不可避免地会发生一些变化。", s:["unavoidable","certain","bound"], col:"an inevitable result / it is inevitable that", c:["写作高分词","学术难词"]},
+  {w:"innovation", uk:"/ˌɪnəˈveɪʃn/", us:"/ˌɪnəˈveɪʃn/", d:"n. 创新；革新", ex:"Technological innovation is driving the rapid development of industry.", zh:"技术创新正在推动工业的快速发展。", s:["invention","reform","novelty"], col:"technological innovation / encourage innovation", c:["写作高分词"]},
+  {w:"maintain", uk:"/meɪnˈteɪn/", us:"/meɪnˈteɪn/", d:"v. 维持；保持；坚持", ex:"It is important to maintain a healthy work-life balance.", zh:"保持健康的工作与生活平衡很重要。", s:["keep","preserve","sustain"], col:"maintain a balance / maintain relationships", c:["写作高分词"]},
+  {w:"measure", uk:"/ˈmeʒə(r)/", us:"/ˈmeʒər/", d:"v./n. 衡量；测量；措施", ex:"Governments should take measures to reduce air pollution.", zh:"政府应采取减少空气污染的措施。", s:["assess","evaluate","step"], col:"take measures / measure progress", c:["写作高分词"]},
+  {w:"perspective", uk:"/pəˈspektɪv/", us:"/pərˈspektɪv/", d:"n. 视角；观点；透视", ex:"From an economic perspective, the project is highly profitable.", zh:"从经济角度看，这个项目利润很高。", s:["viewpoint","standpoint","angle"], col:"from a ... perspective / a fresh perspective", c:["写作高分词","学术难词"]},
+  {w:"potential", uk:"/pəˈtenʃl/", us:"/pəˈtenʃl/", d:"adj./n. 潜在的；潜力", ex:"The new technology has the potential to transform healthcare.", zh:"这项新技术有潜力改变医疗行业。", s:["possible","latent","capability"], col:"potential risks / realize one's potential", c:["写作高分词","阅读词汇"]},
+  {w:"prevalent", uk:"/ˈprevələnt/", us:"/ˈprevələnt/", d:"adj. 普遍的；流行的", ex:"Obesity is becoming increasingly prevalent among young people.", zh:"肥胖在年轻人中越来越普遍。", s:["common","widespread","dominant"], col:"be prevalent among / increasingly prevalent", c:["写作高分词","学术难词"]},
+  {w:"promote", uk:"/prəˈməʊt/", us:"/prəˈmoʊt/", d:"v. 促进；提升；推广", ex:"The campaign aims to promote healthy eating habits in schools.", zh:"这项运动旨在学校推广健康饮食习惯。", s:["encourage","boost","advance"], col:"promote development / promote awareness", c:["写作高分词"]},
+  {w:"propose", uk:"/prəˈpəʊz/", us:"/prəˈpoʊz/", d:"v. 提议；建议；提出", ex:"The council proposed building a new park in the city centre.", zh:"市议会提议在市中心修建一座新公园。", s:["suggest","recommend","put forward"], col:"propose a plan / it is proposed that", c:["写作高分词","学术难词"]},
+  {w:"pursue", uk:"/pəˈsjuː/", us:"/pərˈsuː/", d:"v. 追求；继续从事", ex:"Many graduates choose to pursue further study abroad.", zh:"许多毕业生选择出国深造。", s:["chase","seek","follow"], col:"pursue a career / pursue higher education", c:["写作高分词"]},
+  {w:"range", uk:"/reɪndʒ/", us:"/reɪndʒ/", d:"n./v. 范围；一系列；变动", ex:"The store offers a wide range of products at reasonable prices.", zh:"这家商店以合理的价格提供种类繁多的产品。", s:["variety","scope","extent"], col:"a wide range of / range from ... to", c:["写作高分词","阅读词汇"]},
+  {w:"reduce", uk:"/rɪˈdjuːs/", us:"/rɪˈduːs/", d:"v. 减少；降低", ex:"Using public transport can significantly reduce carbon emissions.", zh:"使用公共交通可以显著减少碳排放。", s:["decrease","cut","lower"], col:"reduce costs / reduce the risk of", c:["写作高分词"]},
+  {w:"relevant", uk:"/ˈreləvənt/", us:"/ˈreləvənt/", d:"adj. 相关的；切题的", ex:"Make sure your examples are relevant to the question asked.", zh:"确保你的例子与所问的问题相关。", s:["related","pertinent","connected"], col:"relevant to / highly relevant", c:["写作高分词"]},
+  {w:"replace", uk:"/rɪˈpleɪs/", us:"/rɪˈpleɪs/", d:"v. 替换；取代", ex:"Digital payments are gradually replacing cash in many countries.", zh:"在许多国家，电子支付正逐渐取代现金。", s:["substitute","supersede","take the place of"], col:"replace A with B / be replaced by", c:["写作高分词"]},
+  {w:"reveal", uk:"/rɪˈviːl/", us:"/rɪˈviːl/", d:"v. 揭示；揭露；显示", ex:"The survey revealed that most residents support the new plan.", zh:"调查显示大多数居民支持新计划。", s:["show","disclose","expose"], col:"reveal the truth / it was revealed that", c:["写作高分词","阅读词汇"]},
+  {w:"solution", uk:"/səˈluːʃn/", us:"/səˈluːʃn/", d:"n. 解决方案；答案", ex:"There is no simple solution to the problem of traffic congestion.", zh:"交通拥堵问题没有简单的解决方案。", s:["answer","remedy","resolution"], col:"a solution to / find a solution", c:["写作高分词"]},
+  {w:"sustainable", uk:"/səˈsteɪnəbl/", us:"/səˈsteɪnəbl/", d:"adj. 可持续的", ex:"Sustainable development aims to meet present needs without harming the future.", zh:"可持续发展旨在满足当前需求而不损害未来。", s:["viable","durable","renewable"], col:"sustainable development / sustainable energy", c:["写作高分词","学术难词"]},
+  {w:"tendency", uk:"/ˈtendənsi/", us:"/ˈtendənsi/", d:"n. 趋势；倾向", ex:"There is a growing tendency for young people to move to big cities.", zh:"年轻人有越来越多向大城市迁移的趋势。", s:["trend","inclination","propensity"], col:"a tendency to / show a tendency", c:["写作高分词","阅读词汇"]},
+  {w:"affect", uk:"/əˈfekt/", us:"/əˈfekt/", d:"v. 影响；感染", ex:"Lack of sleep can seriously affect students' concentration.", zh:"睡眠不足会严重影响学生的注意力。", s:["influence","impact","influence"], col:"be affected by / affect the outcome", c:["写作高分词","阅读词汇"]},
+  {w:"appropriate", uk:"/əˈprəʊpriət/", us:"/əˈproʊpriət/", d:"adj. 合适的；恰当的", ex:"It is appropriate to acknowledge the sources you use in your essay.", zh:"在论文中注明所用出处是恰当的。", s:["suitable","proper","fitting"], col:"be appropriate for / appropriate behaviour", c:["写作高分词"]},
+  {w:"convenient", uk:"/kənˈviːniənt/", us:"/kənˈviːniənt/", d:"adj. 方便的；便利的", ex:"Online shopping is convenient, but it may lead to impulse buying.", zh:"网购很方便，但可能导致冲动消费。", s:["handy","practical","suitable"], col:"be convenient for / convenient access", c:["写作高分词","口语高频词"]},
+  {w:"decline", uk:"/dɪˈklaɪn/", us:"/dɪˈklaɪn/", d:"v./n. 下降；衰退；婉拒", ex:"There has been a steady decline in the number of library visitors.", zh:"图书馆访客数量持续下降。", s:["decrease","drop","fall"], col:"a decline in / in decline", c:["写作高分词","阅读词汇"]},
+  {w:"depend", uk:"/dɪˈpend/", us:"/dɪˈpend/", d:"v. 依赖；取决于", ex:"The success of the project depends on the cooperation of all members.", zh:"项目的成功取决于所有成员的合作。", s:["rely","hinge"], col:"depend on / it depends on", c:["写作高分词","口语高频词"]},
+  {w:"dominate", uk:"/ˈdɒmɪneɪt/", us:"/ˈdɑːmɪneɪt/", d:"v. 主导；支配；占主导地位", ex:"A few large companies dominate the global smartphone market.", zh:"少数几家大公司主导着全球智能手机市场。", s:["control","lead","prevail"], col:"dominate the market / be dominated by", c:["写作高分词","阅读词汇"]},
+  {w:"enable", uk:"/ɪˈneɪbl/", us:"/ɪˈneɪbl/", d:"v. 使能够；使成为可能", ex:"Scholarships enable students from poor families to attend university.", zh:"奖学金使贫困家庭的学生能够上大学。", s:["allow","permit","empower"], col:"enable sb to do / enable access", c:["写作高分词"]},
+  {w:"expose", uk:"/ɪkˈspəʊz/", us:"/ɪkˈspoʊz/", d:"v. 暴露；接触；揭露", ex:"Reading exposes children to new ideas and different cultures.", zh:"阅读让儿童接触新思想和不同的文化。", s:["reveal","subject","uncover"], col:"be exposed to / expose the truth", c:["写作高分词","阅读词汇"]},
+  {w:"generate", uk:"/ˈdʒenəreɪt/", us:"/ˈdʒenəreɪt/", d:"v. 产生；生成", ex:"Renewable energy sources generate electricity without producing carbon dioxide.", zh:"可再生能源发电不会产生二氧化碳。", s:["produce","create","yield"], col:"generate income / generate electricity", c:["写作高分词","阅读词汇"]},
+  {w:"influence", uk:"/ˈɪnfluəns/", us:"/ˈɪnfluəns/", d:"n./v. 影响；影响力", ex:"Advertising has a strong influence on consumer behaviour.", zh:"广告对消费者行为有很强的影响。", s:["impact","effect","affect"], col:"have an influence on / be influenced by", c:["写作高分词"]},
+  {w:"modify", uk:"/ˈmɒdɪfaɪ/", us:"/ˈmɑːdɪfaɪ/", d:"v. 修改；调整", ex:"The design was modified to reduce production costs.", zh:"该设计经过修改以降低生产成本。", s:["adjust","alter","change"], col:"modify the plan / slightly modified", c:["写作高分词","学术难词"]},
+  {w:"negative", uk:"/ˈneɡətɪv/", us:"/ˈneɡətɪv/", d:"adj. 消极的；负面的", ex:"Excessive screen time can have a negative effect on children's eyesight.", zh:"过度的屏幕时间会对儿童视力产生负面影响。", s:["adverse","unfavourable","harmful"], col:"negative impact / a negative attitude", c:["写作高分词"]},
+  {w:"positive", uk:"/ˈpɒzətɪv/", us:"/ˈpɑːzətɪv/", d:"adj. 积极的；正面的；肯定的", ex:"Regular exercise has a positive effect on both body and mind.", zh:"规律运动对身心都有积极影响。", s:["favourable","optimistic","beneficial"], col:"positive effect / a positive attitude", c:["写作高分词","口语高频词"]},
+  {w:"restrict", uk:"/rɪˈstrɪkt/", us:"/rɪˈstrɪkt/", d:"v. 限制；约束", ex:"Some governments restrict the use of private cars in city centres.", zh:"一些政府限制市中心私家车的使用。", s:["limit","constrain","control"], col:"restrict access / be restricted to", c:["写作高分词","阅读词汇"]},
+  {w:"solve", uk:"/sɒlv/", us:"/sɑːlv/", d:"v. 解决；解答", ex:"Cooperation between countries is needed to solve global problems.", zh:"解决全球性问题需要国家间的合作。", s:["resolve","settle","work out"], col:"solve a problem / solve a mystery", c:["写作高分词"]},
+  {w:"undergo", uk:"/ˌʌndəˈɡəʊ/", us:"/ˌʌndərˈɡoʊ/", d:"v. 经历；接受（变化/治疗）", ex:"The city has undergone rapid transformation over the past twenty years.", zh:"过去二十年这座城市经历了迅速转型。", s:["experience","go through","endure"], col:"undergo changes / undergo training", c:["写作高分词","学术难词"]},
+  {w:"urban", uk:"/ˈɜːbən/", us:"/ˈɜːrbən/", d:"adj. 城市的；都市的", ex:"Urban areas are growing faster than rural ones in most countries.", zh:"在大多数国家，城市地区比农村地区发展更快。", s:["city","metropolitan"], col:"urban development / urban population", c:["写作高分词","阅读词汇"]},
+  {w:"vital", uk:"/ˈvaɪtl/", us:"/ˈvaɪtl/", d:"adj. 至关重要的；必不可少的", ex:"Clean water is vital for the health of every community.", zh:"清洁用水对每个社区的健康都至关重要。", s:["essential","crucial","critical"], col:"play a vital role / be vital to", c:["写作高分词"]},
+
+  /* ============ 口语高频词（Part1/2/3 自然表达） ============ */
+  {w:"actually", uk:"/ˈæktʃuəli/", us:"/ˈæktʃuəli/", d:"adv. 实际上；事实上", ex:"Actually, I prefer reading books in a quiet library.", zh:"其实我更喜欢在安静的图书馆里看书。", s:["in fact","really","as a matter of fact"], col:"actually speaking / actually, ...", c:["口语高频词"]},
+  {w:"basically", uk:"/ˈbeɪsɪkli/", us:"/ˈbeɪsɪkli/", d:"adv. 基本上；大体上", ex:"Basically, the course focuses on practical communication skills.", zh:"基本上，这门课侧重于实用的交流技能。", s:["essentially","fundamentally","mainly"], col:"basically speaking", c:["口语高频词"]},
+  {w:"benefit", uk:"/ˈbenɪfɪt/", us:"/ˈbenɪfɪt/", d:"n./v. 益处；受益", ex:"I think doing sports has enormous benefits for our health.", zh:"我认为运动对我们的健康大有裨益。", s:["advantage","gain","profit"], col:"benefit from / for the benefit of", c:["口语高频词","写作高分词"]},
+  {w:"comfortable", uk:"/ˈkʌmftəbl/", us:"/ˈkʌmftəbl/", d:"adj. 舒适的；自在的", ex:"I feel more comfortable talking to people face to face.", zh:"我觉得面对面与人交谈更自在。", s:["cosy","relaxed","pleasant"], col:"feel comfortable with / a comfortable life", c:["口语高频词"]},
+  {w:"definitely", uk:"/ˈdefɪnətli/", us:"/ˈdefɪnətli/", d:"adv. 肯定地；当然", ex:"I would definitely recommend this book to my friends.", zh:"我肯定会向朋友推荐这本书。", s:["certainly","absolutely","surely"], col:"definitely agree / definitely worth", c:["口语高频词"]},
+  {w:"favorite", uk:"/ˈfeɪvərɪt/", us:"/ˈfeɪvərɪt/", d:"adj./n. 最喜欢的", ex:"My favorite pastime is taking photos of street scenes.", zh:"我最喜欢的消遣是拍摄街景。", s:["preferred","best-loved"], col:"favorite food / a personal favorite", c:["口语高频词"]},
+  {w:"flexible", uk:"/ˈfleksəbl/", us:"/ˈfleksəbl/", d:"adj. 灵活的；可变通的", ex:"A flexible work schedule allows people to balance family and career.", zh:"灵活的工作时间让人们能平衡家庭与事业。", s:["adaptable","adjustable"], col:"flexible working hours / be flexible about", c:["口语高频词","写作高分词"]},
+  {w:"frankly", uk:"/ˈfræŋkli/", us:"/ˈfræŋkli/", d:"adv. 坦白说；坦率地", ex:"Frankly speaking, I'm not a big fan of fast food.", zh:"坦白说，我不太喜欢快餐。", s:["honestly","openly","candidly"], col:"frankly speaking", c:["口语高频词"]},
+  {w:"guess", uk:"/ɡes/", us:"/ɡes/", d:"v./n. 猜测；猜想", ex:"I guess the traffic will be much heavier in the evening.", zh:"我猜晚上的交通会拥堵得多。", s:["suppose","assume","estimate"], col:"I guess / guess what", c:["口语高频词"]},
+  {w:"hobby", uk:"/ˈhɒbi/", us:"/ˈhɑːbi/", d:"n. 爱好；嗜好", ex:"My main hobby is hiking, especially in the mountains.", zh:"我的主要爱好是徒步旅行，尤其是在山区。", s:["pastime","interest","leisure activity"], col:"take up a hobby / pursue a hobby", c:["口语高频词"]},
+  {w:"honestly", uk:"/ˈɒnɪstli/", us:"/ˈɑːnɪstli/", d:"adv. 老实说；诚实地", ex:"Honestly, I didn't enjoy the movie as much as I expected.", zh:"老实说，这部电影没有我预期的那么好看。", s:["frankly","truly","sincerely"], col:"honestly speaking", c:["口语高频词"]},
+  {w:"improvement", uk:"/ɪmˈpruːvmənt/", us:"/ɪmˈpruːvmənt/", d:"n. 改进；提高", ex:"There has been a noticeable improvement in my English speaking.", zh:"我的英语口语有了明显提高。", s:["progress","enhancement","advance"], col:"make an improvement / show improvement", c:["口语高频词","写作高分词"]},
+  {w:"journey", uk:"/ˈdʒɜːni/", us:"/ˈdʒɜːrni/", d:"n. 旅程；旅行", ex:"The journey to work takes me about forty minutes by subway.", zh:"我乘地铁上班大约需要四十分钟。", s:["trip","voyage","travel"], col:"a long journey / on the journey", c:["口语高频词"]},
+  {w:"lifestyle", uk:"/ˈlaɪfstaɪl/", us:"/ˈlaɪfstaɪl/", d:"n. 生活方式", ex:"A healthy lifestyle includes a balanced diet and regular exercise.", zh:"健康的生活方式包括均衡饮食和规律运动。", s:["way of life","habits"], col:"healthy lifestyle / adopt a lifestyle", c:["口语高频词","写作高分词"]},
+  {w:"local", uk:"/ˈləʊkl/", us:"/ˈloʊkl/", d:"adj. 当地的；本地的", ex:"I like visiting local markets to experience the culture.", zh:"我喜欢逛当地市场来体验文化。", s:["regional","native","nearby"], col:"local food / local residents", c:["口语高频词"]},
+  {w:"neighbourhood", uk:"/ˈneɪbəhʊd/", us:"/ˈneɪbərhʊd/", d:"n. 街区；社区；邻里", ex:"My neighbourhood is quiet and has several good restaurants.", zh:"我住的街区很安静，还有几家不错的餐馆。", s:["community","district","area"], col:"in the neighbourhood / a friendly neighbourhood", c:["口语高频词"]},
+  {w:"outdoor", uk:"/ˌaʊtˈdɔː(r)/", us:"/ˌaʊtˈdɔːr/", d:"adj. 户外的；室外的", ex:"I prefer outdoor activities such as cycling and camping.", zh:"我更喜欢骑自行车、露营等户外活动。", s:["open-air","outside"], col:"outdoor activities / outdoor sports", c:["口语高频词"]},
+  {w:"pleasure", uk:"/ˈpleʒə(r)/", us:"/ˈpleʒər/", d:"n. 快乐；乐趣", ex:"Reading is one of life's greatest pleasures for me.", zh:"阅读是我生活中最大的乐趣之一。", s:["joy","delight","enjoyment"], col:"with pleasure / take pleasure in", c:["口语高频词"]},
+  {w:"prefer", uk:"/prɪˈfɜː(r)/", us:"/prɪˈfɜːr/", d:"v. 更喜欢；宁愿", ex:"I prefer tea to coffee in the morning.", zh:"早上我更喜欢喝茶而不是咖啡。", s:["favour","would rather","choose"], col:"prefer A to B / prefer to do", c:["口语高频词"]},
+  {w:"probably", uk:"/ˈprɒbəbli/", us:"/ˈprɑːbəbli/", d:"adv. 很可能；大概", ex:"It will probably rain later, so take an umbrella with you.", zh:"稍后可能会下雨，带把伞吧。", s:["likely","presumably","perhaps"], col:"probably the best / most probably", c:["口语高频词"]},
+  {w:"relaxation", uk:"/ˌriːlækˈseɪʃn/", us:"/ˌriːlækˈseɪʃn/", d:"n. 放松；消遣", ex:"Listening to music is my favourite form of relaxation.", zh:"听音乐是我最喜欢的放松方式。", s:["rest","leisure","recreation"], col:"a moment of relaxation / relaxation techniques", c:["口语高频词"]},
+  {w:"routine", uk:"/ruːˈtiːn/", us:"/ruːˈtiːn/", d:"n./adj. 日常惯例；例行的", ex:"My daily routine starts with a cup of coffee and some reading.", zh:"我的日常从一杯咖啡和阅读开始。", s:["habit","schedule","regular"], col:"daily routine / routine tasks", c:["口语高频词"]},
+  {w:"scenery", uk:"/ˈsiːnəri/", us:"/ˈsiːnəri/", d:"n. 风景；景色", ex:"The scenery along the coast is absolutely breathtaking.", zh:"沿海的风景美得令人窒息。", s:["landscape","view","sight"], col:"beautiful scenery / natural scenery", c:["口语高频词"]},
+  {w:"stress", uk:"/stres/", us:"/stres/", d:"n./v. 压力；强调", ex:"Exams can cause a lot of stress for students.", zh:"考试会给学生带来很大压力。", s:["pressure","tension","strain"], col:"relieve stress / under stress", c:["口语高频词","写作高分词"]},
+  {w:"stuff", uk:"/stʌf/", us:"/stʌf/", d:"n. 东西；物品；材料", ex:"I usually pack all my stuff the night before a trip.", zh:"旅行前一晚我通常会把所有东西打包好。", s:["things","belongings","items"], col:"personal stuff / all kinds of stuff", c:["口语高频词"]},
+  {w:"suppose", uk:"/səˈpəʊz/", us:"/səˈpoʊz/", d:"v. 认为；假设；猜想", ex:"I suppose online courses will become even more popular.", zh:"我想在线课程会变得更加流行。", s:["assume","guess","presume"], col:"I suppose / be supposed to", c:["口语高频词"]},
+  {w:"travel", uk:"/ˈtrævl/", us:"/ˈtrævl/", d:"v./n. 旅行；移动", ex:"I love to travel because it opens my eyes to new cultures.", zh:"我喜欢旅行，因为它让我开阔眼界，了解新的文化。", s:["journey","tour","trip"], col:"travel abroad / travel light", c:["口语高频词"]},
+  {w:"variety", uk:"/vəˈraɪəti/", us:"/vəˈraɪəti/", d:"n. 多样性；种类", ex:"The city offers a wide variety of entertainment options.", zh:"这座城市提供各种各样的娱乐选择。", s:["diversity","range","assortment"], col:"a variety of / add variety to", c:["口语高频词","写作高分词"]},
+  {w:"weather", uk:"/ˈweðə(r)/", us:"/ˈweðər/", d:"n. 天气", ex:"The weather here is mild and pleasant all year round.", zh:"这里的气候全年温和宜人。", s:["climate","conditions"], col:"weather forecast / in all weathers", c:["口语高频词"]},
+  {w:"weekend", uk:"/ˌwiːkˈend/", us:"/ˈwiːkend/", d:"n. 周末", ex:"I usually spend my weekend with family and close friends.", zh:"我通常和家人及好友一起过周末。", s:["days off"], col:"at the weekend / weekend plans", c:["口语高频词"]},
+  {w:"afford", uk:"/əˈfɔːd/", us:"/əˈfɔːrd/", d:"v. 负担得起；承担得起", ex:"Not everyone can afford to study in a private school.", zh:"不是每个人都能负担得起私立学校的学费。", s:["pay for","manage","bear"], col:"can afford to / afford the cost", c:["口语高频词","写作高分词"]},
+  {w:"atmosphere", uk:"/ˈætməsfɪə(r)/", us:"/ˈætməsfɪr/", d:"n. 气氛；大气", ex:"The restaurant has a warm and welcoming atmosphere.", zh:"这家餐厅有一种温暖而友好的氛围。", s:["ambience","mood","feel"], col:"friendly atmosphere / a relaxed atmosphere", c:["口语高频词"]},
+  {w:"habit", uk:"/ˈhæbɪt/", us:"/ˈhæbɪt/", d:"n. 习惯", ex:"Developing the habit of reading every day takes time.", zh:"养成每天阅读的习惯需要时间。", s:["practice","custom","routine"], col:"develop a habit / break a habit", c:["口语高频词"]},
+  {w:"memorable", uk:"/ˈmemərəbl/", us:"/ˈmemərəbl/", d:"adj. 难忘的；值得纪念的", ex:"The trip was truly memorable because of the amazing sunset.", zh:"因为壮观的日落，这次旅行实在令人难忘。", s:["unforgettable","remarkable","impressive"], col:"a memorable experience / memorable moments", c:["口语高频词"]},
+  {w:"relax", uk:"/rɪˈlæks/", us:"/rɪˈlæks/", d:"v. 放松；休息", ex:"I like to relax by taking a long walk in the park.", zh:"我喜欢在公园里长时间散步来放松。", s:["unwind","rest","calm down"], col:"relax after work / relax the mind", c:["口语高频词"]},
+  /* ============ 学术难词（A类/G类阅读高频学术词） ============ */
+  {w:"ambiguous", uk:"/æmˈbɪɡjuəs/", us:"/æmˈbɪɡjuəs/", d:"adj. 模糊不清的；模棱两可的", ex:"The wording of the contract is ambiguous and needs clarification.", zh:"合同措辞模棱两可，需要澄清。", s:["unclear","vague","equivocal"], col:"ambiguous meaning / an ambiguous answer", c:["学术难词"]},
+  {w:"autonomous", uk:"/ɔːˈtɒnəməs/", us:"/ɔːˈtɑːnəməs/", d:"adj. 自主的；自治的", ex:"Autonomous vehicles could reduce traffic accidents in the future.", zh:"自动驾驶汽车未来可减少交通事故。", s:["independent","self-governing","self-ruling"], col:"autonomous region / an autonomous system", c:["学术难词"]},
+  {w:"bias", uk:"/ˈbaɪəs/", us:"/ˈbaɪəs/", d:"n./v. 偏见；偏向", ex:"Researchers must avoid bias when interpreting the results.", zh:"研究人员在解读结果时必须避免偏见。", s:["prejudice","partiality","preconception"], col:"gender bias / be biased against", c:["学术难词"]},
+  {w:"coherent", uk:"/kəʊˈhɪərənt/", us:"/koʊˈhɪrənt/", d:"adj. 连贯的；条理清晰的", ex:"The essay should present a coherent argument from start to finish.", zh:"文章应从头到尾呈现连贯的论点。", s:["logical","consistent","clear"], col:"a coherent argument / coherent structure", c:["学术难词"]},
+  {w:"controversial", uk:"/ˌkɒntrəˈvɜːʃl/", us:"/ˌkɑːntrəˈvɜːrʃl/", d:"adj. 有争议的", ex:"Genetic engineering remains a highly controversial topic.", zh:"基因工程仍是一个极具争议的话题。", s:["disputed","debatable","contentious"], col:"a controversial issue / highly controversial", c:["学术难词"]},
+  {w:"criterion", uk:"/kraɪˈtɪəriən/", us:"/kraɪˈtɪriən/", d:"n. 标准；准则（复数 criteria）", ex:"Cost is an important criterion when evaluating the options.", zh:"成本是评估选项时的一个重要标准。", s:["standard","benchmark","measure"], col:"selection criteria / meet the criteria", c:["学术难词"]},
+  {w:"empirical", uk:"/ɪmˈpɪrɪkl/", us:"/ɪmˈpɪrɪkl/", d:"adj. 实证的；以经验为依据的", ex:"The theory is supported by strong empirical evidence.", zh:"这一理论有强有力的实证支持。", s:["experimental","observational","evidential"], col:"empirical evidence / empirical research", c:["学术难词"]},
+  {w:"fluctuate", uk:"/ˈflʌktʃueɪt/", us:"/ˈflʌktʃueɪt/", d:"v. 波动；起伏", ex:"Oil prices fluctuate according to global demand.", zh:"油价随全球需求波动。", s:["vary","swing","change"], col:"fluctuate between / prices fluctuate", c:["学术难词"]},
+  {w:"inherent", uk:"/ɪnˈhɪərənt/", us:"/ɪnˈhɪrənt/", d:"adj. 固有的；内在的", ex:"There are inherent risks in every scientific experiment.", zh:"每个科学实验都有固有的风险。", s:["intrinsic","innate","built-in"], col:"inherent risk / be inherent in", c:["学术难词"]},
+  {w:"methodology", uk:"/ˌmeθəˈdɒlədʒi/", us:"/ˌmeθəˈdɑːlədʒi/", d:"n. 方法论；研究方法", ex:"The methodology used in the study should be described in detail.", zh:"研究中使用的应详细描述其方法。", s:["approach","procedure","framework"], col:"research methodology / adopt a methodology", c:["学术难词"]},
+  {w:"paradigm", uk:"/ˈpærədaɪm/", us:"/ˈpærədaɪm/", d:"n. 范式；范例", ex:"The discovery represented a shift in the scientific paradigm.", zh:"这一发现代表了科学范式的转变。", s:["model","pattern","framework"], col:"a new paradigm / paradigm shift", c:["学术难词"]},
+  {w:"pragmatic", uk:"/præɡˈmætɪk/", us:"/præɡˈmætɪk/", d:"adj. 务实的；实用主义的", ex:"The government took a pragmatic approach to solving the housing crisis.", zh:"政府采取了务实的方法来解决住房危机。", s:["practical","realistic","sensible"], col:"a pragmatic approach / pragmatic solutions", c:["学术难词"]},
+  {w:"rigorous", uk:"/ˈrɪɡərəs/", us:"/ˈrɪɡərəs/", d:"adj. 严谨的；严格的", ex:"The findings are based on rigorous scientific analysis.", zh:"这些发现基于严谨的科学分析。", s:["strict","thorough","demanding"], col:"rigorous testing / a rigorous study", c:["学术难词"]},
+  {w:"scenario", uk:"/səˈnɑːriəʊ/", us:"/səˈnærioʊ/", d:"n. 情景；设想；方案", ex:"In the worst-case scenario, the project could be delayed by a year.", zh:"在最坏的情况下，项目可能推迟一年。", s:["situation","case","schematic"], col:"in the worst-case scenario / possible scenarios", c:["学术难词"]},
+  {w:"sophisticated", uk:"/səˈfɪstɪkeɪtɪd/", us:"/səˈfɪstɪkeɪtɪd/", d:"adj. 复杂的；精密的；老练的", ex:"The laboratory uses sophisticated equipment to analyse samples.", zh:"实验室使用精密设备分析样本。", s:["complex","advanced","refined"], col:"sophisticated technology / a sophisticated system", c:["学术难词"]},
+  {w:"subordinate", uk:"/səˈbɔːdɪnət/", us:"/səˈbɔːrdɪnət/", d:"adj./n. 从属的；下级", ex:"In this model, local needs are subordinate to national interests.", zh:"在这一模式中，地方需求从属于国家利益。", s:["secondary","subsidiary","junior"], col:"be subordinate to / subordinate position", c:["学术难词"]},
+  {w:"synthesize", uk:"/ˈsɪnθəsaɪz/", us:"/ˈsɪnθəsaɪz/", d:"v. 综合；合成", ex:"A good review synthesizes findings from many different studies.", zh:"一篇好的综述综合了众多不同研究的发现。", s:["combine","integrate","merge"], col:"synthesize information / synthesize results", c:["学术难词"]},
+  {w:"theoretical", uk:"/ˌθɪəˈretɪkl/", us:"/ˌθiːəˈretɪkl/", d:"adj. 理论的；理论上的", ex:"The course covers both theoretical knowledge and practical skills.", zh:"这门课既涵盖理论知识，也涵盖实践技能。", s:["abstract","conceptual","academic"], col:"theoretical framework / in theory", c:["学术难词"]},
+  {w:"underlying", uk:"/ˌʌndəˈlaɪɪŋ/", us:"/ˌʌndərˈlaɪɪŋ/", d:"adj. 潜在的；根本的", ex:"We need to understand the underlying causes of the problem.", zh:"我们需要理解问题的根本原因。", s:["fundamental","basic","root"], col:"underlying causes / underlying principles", c:["学术难词"]},
+  {w:"cumulative", uk:"/ˈkjuːmjələtɪv/", us:"/ˈkjuːmjələtɪv/", d:"adj. 累积的；渐增的", ex:"The cumulative effect of small daily efforts is remarkable.", zh:"每天小小努力的累积效果非常显著。", s:["accumulative","growing","aggregate"], col:"cumulative effect / cumulative knowledge", c:["学术难词"]},
+  {w:"disparity", uk:"/dɪˈspærəti/", us:"/dɪˈspærəti/", d:"n. 差异；差距", ex:"There is a wide disparity in income between urban and rural areas.", zh:"城乡之间存在巨大的收入差距。", s:["gap","inequality","difference"], col:"income disparity / a disparity between", c:["学术难词"]},
+  {w:"mitigate", uk:"/ˈmɪtɪɡeɪt/", us:"/ˈmɪtɪɡeɪt/", d:"v. 缓解；减轻", ex:"Planting more trees can help mitigate the effects of climate change.", zh:"多种树有助于缓解气候变化的影响。", s:["alleviate","reduce","relieve"], col:"mitigate the effects / mitigate risks", c:["学术难词"]},
+  {w:"notion", uk:"/ˈnəʊʃn/", us:"/ˈnoʊʃn/", d:"n. 观念；概念；看法", ex:"The notion that money brings happiness is widely debated.", zh:"金钱带来幸福这一观念被广泛争论。", s:["idea","belief","concept"], col:"the notion that / reject a notion", c:["学术难词"]},
+  {w:"preliminary", uk:"/prɪˈlɪmɪnəri/", us:"/prɪˈlɪmɪneri/", d:"adj. 初步的；预备的", ex:"Preliminary results suggest the treatment is effective.", zh:"初步结果表明这种治疗有效。", s:["initial","tentative","introductory"], col:"preliminary results / preliminary research", c:["学术难词"]},
+  {w:"rational", uk:"/ˈræʃnəl/", us:"/ˈræʃnəl/", d:"adj. 理性的；合理的", ex:"Consumers do not always make rational decisions when shopping.", zh:"消费者购物时并不总是做出理性决定。", s:["logical","reasonable","sensible"], col:"rational decisions / rational thinking", c:["学术难词"]},
+  {w:"robust", uk:"/rəʊˈbʌst/", us:"/roʊˈbʌst/", d:"adj. 稳健的；强健的；坚固的", ex:"The results are robust even when different methods are used.", zh:"即使使用不同方法，结果依然稳健。", s:["sturdy","solid","strong"], col:"robust evidence / a robust system", c:["学术难词"]},
+  {w:"subsequent", uk:"/ˈsʌbsɪkwənt/", us:"/ˈsʌbsɪkwənt/", d:"adj. 随后的；后来的", ex:"Subsequent research confirmed the earlier findings.", zh:"随后的研究证实了早先的发现。", s:["following","later","ensuing"], col:"subsequent events / in subsequent years", c:["学术难词"]},
+  {w:"verify", uk:"/ˈverɪfaɪ/", us:"/ˈverɪfaɪ/", d:"v. 核实；证实", ex:"The results need to be verified by an independent laboratory.", zh:"结果需要由独立实验室核实。", s:["confirm","validate","check"], col:"verify the accuracy / verify data", c:["学术难词"]},
+  {w:"viable", uk:"/ˈvaɪəbl/", us:"/ˈvaɪəbl/", d:"adj. 可行的；可实施的", ex:"Solar power is becoming a more viable option for homes.", zh:"太阳能正成为家庭更可行的选择。", s:["feasible","practicable","workable"], col:"a viable option / economically viable", c:["学术难词"]},
+  {w:"widespread", uk:"/ˈwaɪdspred/", us:"/ˈwaɪdspred/", d:"adj. 广泛的；普遍的", ex:"The use of smartphones is now widespread among all age groups.", zh:"如今智能手机在各年龄段都广泛使用。", s:["common","extensive","prevalent"], col:"widespread use / widespread concern", c:["学术难词","阅读词汇"]},
+  {w:"conventional", uk:"/kənˈvenʃənl/", us:"/kənˈvenʃənl/", d:"adj. 传统的；常规的", ex:"Conventional farming relies heavily on chemical fertilisers.", zh:"传统农业严重依赖化肥。", s:["traditional","customary","standard"], col:"conventional wisdom / conventional methods", c:["学术难词"]},
+  {w:"diverse", uk:"/daɪˈvɜːs/", us:"/daɪˈvɜːrs/", d:"adj. 多样的；不同的", ex:"The city has a diverse population from many cultural backgrounds.", zh:"这座城市拥有来自多种文化背景的多元化人口。", s:["varied","different","mixed"], col:"a diverse range of / culturally diverse", c:["学术难词","写作高分词"]},
+  {w:"eliminate", uk:"/ɪˈlɪmɪneɪt/", us:"/ɪˈlɪmɪneɪt/", d:"v. 消除；排除", ex:"Better design can eliminate many common safety hazards.", zh:"更好的设计可以消除许多常见的安全隐患。", s:["remove","eradicate","get rid of"], col:"eliminate the need / eliminate waste", c:["学术难词"]},
+  {w:"evolve", uk:"/iˈvɒlv/", us:"/iˈvɑːlv/", d:"v. 演变；进化；逐步发展", ex:"Languages evolve constantly to reflect changes in society.", zh:"语言不断演变以反映社会的变化。", s:["develop","progress","transform"], col:"evolve into / evolve over time", c:["学术难词"]},
+  {w:"integrate", uk:"/ˈɪntɪɡreɪt/", us:"/ˈɪntɪɡreɪt/", d:"v. 整合；融入；结合", ex:"It is hard for newcomers to integrate into a new community.", zh:"新来者很难融入新的社区。", s:["combine","merge","incorporate"], col:"integrate into / integrate technology", c:["学术难词","写作高分词"]},
+  {w:"precise", uk:"/prɪˈsaɪs/", us:"/prɪˈsaɪs/", d:"adj. 精确的；准确的", ex:"The instrument can measure temperature with great precision.", zh:"这台仪器可以非常精确地测量温度。", s:["exact","accurate","detailed"], col:"precise measurement / to be precise", c:["学术难词"]},
+  {w:"transform", uk:"/trænsˈfɔːm/", us:"/trænsˈfɔːrm/", d:"v. 转变；改变；改造", ex:"The internet has transformed the way we communicate.", zh:"互联网改变了我们的沟通方式。", s:["change","convert","alter"], col:"transform into / be transformed by", c:["学术难词","写作高分词"]},
+
+  /* ============ 补充核心词（高频基础词，覆盖听说读写） ============ */
+  {w:"ability", uk:"/əˈbɪləti/", us:"/əˈbɪləti/", d:"n. 能力；才能", ex:"The programme aims to develop students' critical thinking ability.", zh:"该课程旨在培养学生的批判性思维能力。", s:["capability","capacity","talent"], col:"the ability to / demonstrate an ability", c:["写作高分词","阅读词汇"]},
+  {w:"accurate", uk:"/ˈækjərət/", us:"/ˈækjərət/", d:"adj. 准确的；精确的", ex:"It is important to record accurate data during the experiment.", zh:"实验期间记录准确的数据很重要。", s:["precise","exact","correct"], col:"accurate information / accurate description", c:["学术难词","阅读词汇"]},
+  {w:"adequate", uk:"/ˈædɪkwət/", us:"/ˈædɪkwət/", d:"adj. 足够的；充分的", ex:"The report argues that the current funding is not adequate.", zh:"报告认为目前的资金不足。", s:["sufficient","enough","ample"], col:"adequate resources / be adequate for", c:["写作高分词","阅读词汇"]},
+  {w:"available", uk:"/əˈveɪləbl/", us:"/əˈveɪləbl/", d:"adj. 可获得的；有空的", ex:"Free parking is available for visitors at the weekend.", zh:"周末为游客提供免费停车。", s:["accessible","obtainable","free"], col:"be available to / available resources", c:["阅读词汇","口语高频词"]},
+  {w:"average", uk:"/ˈævərɪdʒ/", us:"/ˈævərɪdʒ/", d:"n./adj. 平均；普通的", ex:"The average temperature in summer has risen by two degrees.", zh:"夏季平均气温上升了两度。", s:["mean","typical","ordinary"], col:"on average / the average cost", c:["阅读词汇"]},
+  {w:"aware", uk:"/əˈweə(r)/", us:"/əˈwer/", d:"adj. 意识到的；知道的", ex:"More people are becoming aware of the importance of recycling.", zh:"越来越多的人意识到回收利用的重要性。", s:["conscious","knowledgeable","cognizant"], col:"be aware of / become aware that", c:["写作高分词","阅读词汇"]},
+  {w:"capacity", uk:"/kəˈpæsəti/", us:"/kəˈpæsəti/", d:"n. 容量；能力；容纳量", ex:"The stadium has a seating capacity of fifty thousand.", zh:"该体育场可容纳五万名观众。", s:["ability","volume","size"], col:"capacity for / in one's capacity as", c:["阅读词汇","学术难词"]},
+  {w:"claim", uk:"/kleɪm/", us:"/kleɪm/", d:"v./n. 声称；主张；索取", ex:"The author claims that the study has several limitations.", zh:"作者声称该研究有几处局限。", s:["assert","argue","declare"], col:"claim that / make a claim", c:["阅读词汇"]},
+  {w:"combine", uk:"/kəmˈbaɪn/", us:"/kəmˈbaɪn/", d:"v. 结合；联合", ex:"The course combines theory with practical experience.", zh:"这门课把理论与实践结合起来。", s:["merge","integrate","unite"], col:"combine A with B / combined with", c:["写作高分词"]},
+  {w:"common", uk:"/ˈkɒmən/", us:"/ˈkɑːmən/", d:"adj. 常见的；共同的", ex:"It is common for students to feel nervous before an exam.", zh:"学生在考试前感到紧张是很常见的。", s:["widespread","usual","ordinary"], col:"have sth in common / a common problem", c:["阅读词汇","口语高频词"]},
+  {w:"compare", uk:"/kəmˈpeə(r)/", us:"/kəmˈper/", d:"v. 比较；对比", ex:"It is useful to compare different sources of information.", zh:"比较不同的信息来源是有用的。", s:["contrast","measure against"], col:"compare A with B / compared to", c:["阅读词汇"]},
+  {w:"concern", uk:"/kənˈsɜːn/", us:"/kənˈsɜːrn/", d:"n./v. 担忧；关心；涉及", ex:"There is growing concern about the impact of plastic waste.", zh:"人们越来越担心塑料垃圾的影响。", s:["worry","anxiety","issue"], col:"be concerned about / a matter of concern", c:["阅读词汇","写作高分词"]},
+  {w:"conduct", uk:"/kənˈdʌkt/", us:"/kənˈdʌkt/", d:"v. 进行；实施 n. 行为", ex:"The researchers conducted a survey of five hundred residents.", zh:"研究人员对五百名居民进行了调查。", s:["carry out","perform","run"], col:"conduct a survey / conduct research", c:["学术难词","阅读词汇"]},
+  {w:"confident", uk:"/ˈkɒnfɪdənt/", us:"/ˈkɑːnfɪdənt/", d:"adj. 自信的；有把握的", ex:"Speaking in front of others makes me feel more confident.", zh:"在别人面前演讲让我更自信。", s:["assured","self-assured","sure"], col:"be confident about / a confident speaker", c:["口语高频词"]},
+  {w:"consider", uk:"/kənˈsɪdə(r)/", us:"/kənˈsɪdər/", d:"v. 考虑；认为", ex:"We should consider both the costs and the benefits of the plan.", zh:"我们应该同时考虑该计划的成本和收益。", s:["think about","weigh up","regard"], col:"consider doing / be considered as", c:["写作高分词"]},
+  {w:"consist", uk:"/kənˈsɪst/", us:"/kənˈsɪst/", d:"v. 由…组成；在于", ex:"The course consists of ten lectures and two seminars.", zh:"这门课由十次讲座和两次研讨课组成。", s:["comprise","be made up of","contain"], col:"consist of / consist in", c:["阅读词汇"]},
+  {w:"current", uk:"/ˈkʌrənt/", us:"/ˈkɜːrənt/", d:"adj./n. 当前的；水流；电流", ex:"The current trend is towards remote working.", zh:"当前的趋势是远程办公。", s:["present","existing","contemporary"], col:"current situation / current trends", c:["阅读词汇"]},
+  {w:"decrease", uk:"/dɪˈkriːs/", us:"/dɪˈkriːs/", d:"v./n. 减少；下降", ex:"Sales decreased by fifteen percent last quarter.", zh:"上季度销售额下降了百分之十五。", s:["decline","drop","reduce"], col:"a decrease in / decrease gradually", c:["阅读词汇","写作高分词"]},
+  {w:"describe", uk:"/dɪˈskraɪb/", us:"/dɪˈskraɪb/", d:"v. 描述；形容", ex:"The table describes the changes in population over thirty years.", zh:"该表格描述了三十年的人口变化。", s:["depict","explain","illustrate"], col:"describe as / describe in detail", c:["阅读词汇"]},
+  {w:"determine", uk:"/dɪˈtɜːmɪn/", us:"/dɪˈtɜːrmɪn/", d:"v. 决定；确定；测定", ex:"Several factors determine the final price of the product.", zh:"多种因素决定产品的最终价格。", s:["decide","establish","settle"], col:"determine the outcome / be determined by", c:["学术难词","阅读词汇"]},
+  {w:"develop", uk:"/dɪˈveləp/", us:"/dɪˈveləp/", d:"v. 发展；培养；开发", ex:"Reading widely helps students develop a broader vocabulary.", zh:"广泛阅读有助于学生扩大词汇量。", s:["grow","improve","cultivate"], col:"develop skills / develop an idea", c:["写作高分词"]},
+  {w:"differ", uk:"/ˈdɪfə(r)/", us:"/ˈdɪfər/", d:"v. 不同；相异", ex:"Opinions differ on whether exams are the best form of assessment.", zh:"关于考试是否是最好的评估方式，人们意见不一。", s:["vary","disagree","contrast"], col:"differ from / opinions differ", c:["阅读词汇"]},
+  {w:"dynamic", uk:"/daɪˈnæmɪk/", us:"/daɪˈnæmɪk/", d:"adj. 动态的；充满活力的", ex:"The job market is dynamic and constantly changing.", zh:"就业市场充满活力，不断变化。", s:["active","energetic","changing"], col:"dynamic system / a dynamic industry", c:["学术难词"]},
+  {w:"essential", uk:"/ɪˈsenʃl/", us:"/ɪˈsenʃl/", d:"adj. 必不可少的；本质的", ex:"Sleep is essential for both physical and mental health.", zh:"睡眠对身心健康都必不可少。", s:["vital","crucial","necessary"], col:"be essential for / essential skills", c:["写作高分词"]},
+  {w:"estimate", uk:"/ˈestɪmeɪt/", us:"/ˈestɪmeɪt/", d:"v./n. 估计；估算", ex:"It is estimated that the project will take two years to complete.", zh:"据估计，该项目将耗时两年完成。", s:["calculate","approximate","gauge"], col:"estimate the cost / rough estimate", c:["学术难词","阅读词汇"]},
+  {w:"expand", uk:"/ɪkˈspænd/", us:"/ɪkˈspænd/", d:"v. 扩大；扩展", ex:"The company plans to expand its business overseas.", zh:"该公司计划将业务扩展到海外。", s:["extend","grow","enlarge"], col:"expand into / expand the market", c:["写作高分词"]},
+  {w:"expense", uk:"/ɪkˈspens/", us:"/ɪkˈspens/", d:"n. 费用；花费；开支", ex:"The expense of living in a big city is rising every year.", zh:"在大城市生活的开销逐年上升。", s:["cost","expenditure","charge"], col:"at the expense of / daily expenses", c:["写作高分词"]},
+  {w:"external", uk:"/ɪkˈstɜːnl/", us:"/ɪkˈstɜːrnl/", d:"adj. 外部的；外界的", ex:"The study was funded by an external research body.", zh:"该研究由外部研究机构资助。", s:["outside","outer","foreign"], col:"external factors / external pressure", c:["学术难词","阅读词汇"]},
+  {w:"feature", uk:"/ˈfiːtʃə(r)/", us:"/ˈfiːtʃər/", d:"n./v. 特征；特色；以…为特色", ex:"A key feature of the design is its energy efficiency.", zh:"该设计的一个关键特征是能源效率。", s:["characteristic","aspect","trait"], col:"a key feature / feature prominently", c:["阅读词汇"]},
+  {w:"gain", uk:"/ɡeɪn/", us:"/ɡeɪn/", d:"v./n. 获得；增加；收益", ex:"Students gain valuable experience through part-time work.", zh:"学生通过兼职获得宝贵经验。", s:["obtain","acquire","earn"], col:"gain experience / gain weight", c:["写作高分词","口语高频词"]},
+  {w:"global", uk:"/ˈɡləʊbl/", us:"/ˈɡloʊbl/", d:"adj. 全球的；全面的", ex:"Global warming is one of the greatest challenges of our time.", zh:"全球变暖是我们时代最大的挑战之一。", s:["worldwide","international","universal"], col:"global warming / global economy", c:["阅读词汇","写作高分词"]},
+  {w:"gradual", uk:"/ˈɡrædʒuəl/", us:"/ˈɡrædʒuəl/", d:"adj. 逐渐的；渐进的", ex:"There has been a gradual improvement in air quality.", zh:"空气质量已逐渐改善。", s:["slow","steady","progressive"], col:"a gradual increase / gradual change", c:["阅读词汇"]},
+  {w:"handle", uk:"/ˈhændl/", us:"/ˈhændl/", d:"v. 处理；应对 n. 把手", ex:"Employees should know how to handle customer complaints.", zh:"员工应知道如何处理客户投诉。", s:["manage","deal with","cope with"], col:"handle a problem / handle pressure", c:["口语高频词"]},
+  {w:"ignore", uk:"/ɪɡˈnɔː(r)/", us:"/ɪɡˈnɔːr/", d:"v. 忽视；忽略", ex:"We cannot ignore the environmental cost of mass production.", zh:"我们不能忽视大规模生产的环境代价。", s:["neglect","overlook","disregard"], col:"ignore the fact / completely ignore", c:["写作高分词"]},
+  {w:"illustrate", uk:"/ˈɪləstreɪt/", us:"/ˈɪləstreɪt/", d:"v. 说明；阐明；举例说明", ex:"The graph illustrates the growth of online shopping.", zh:"该图表说明了网络购物的增长。", s:["demonstrate","show","clarify"], col:"illustrate a point / be illustrated by", c:["学术难词","阅读词汇"]},
+  {w:"improve", uk:"/ɪmˈpruːv/", us:"/ɪmˈpruːv/", d:"v. 改善；提高", ex:"Regular practice will improve your pronunciation.", zh:"经常练习会改善你的发音。", s:["enhance","better","upgrade"], col:"improve performance / improve the quality", c:["写作高分词","口语高频词"]},
+  {w:"include", uk:"/ɪnˈkluːd/", us:"/ɪnˈkluːd/", d:"v. 包括；包含", ex:"The price includes breakfast and airport transfer.", zh:"价格包含早餐和机场接送。", s:["contain","cover","comprise"], col:"include in / be included", c:["阅读词汇"]},
+  {w:"increase", uk:"/ɪnˈkriːs/", us:"/ɪnˈkriːs/", d:"v./n. 增加；增长", ex:"The number of international students has increased steadily.", zh:"国际学生人数稳步增长。", s:["rise","grow","expand"], col:"an increase in / increase by", c:["阅读词汇","写作高分词"]},
+  {w:"involve", uk:"/ɪnˈvɒlv/", us:"/ɪnˈvɑːlv/", d:"v. 涉及；包含；使参与", ex:"The job involves dealing with people from different countries.", zh:"这份工作涉及与来自不同国家的人打交道。", s:["include","entail","engage"], col:"be involved in / involve doing", c:["写作高分词","口语高频词"]},
+  {w:"limit", uk:"/ˈlɪmɪt/", us:"/ˈlɪmɪt/", d:"n./v. 限制；限度", ex:"There is a limit to the amount of data we can store locally.", zh:"我们本地能存储的数据量是有限的。", s:["restrict","bound","cap"], col:"limit the use of / within the limit", c:["写作高分词"]},
+  {w:"link", uk:"/lɪŋk/", us:"/lɪŋk/", d:"n./v. 联系；连接", ex:"Research has found a clear link between diet and health.", zh:"研究发现饮食与健康之间存在明确联系。", s:["connection","relationship","tie"], col:"a link between / be linked to", c:["阅读词汇","写作高分词"]},
+  {w:"locate", uk:"/ləʊˈkeɪt/", us:"/ˈloʊkeɪt/", d:"v. 位于；定位；找出", ex:"The new campus is located near the city centre.", zh:"新校区位于市中心附近。", s:["situate","position","place"], col:"be located in / locate the source", c:["阅读词汇"]},
+  {w:"major", uk:"/ˈmeɪdʒə(r)/", us:"/ˈmeɪdʒər/", d:"adj./n. 主要的；专业 v. 主修", ex:"Tourism is a major source of income for this region.", zh:"旅游业是该地区的主要收入来源。", s:["main","principal","primary"], col:"a major factor / major in", c:["阅读词汇","口语高频词"]},
+  {w:"majority", uk:"/məˈdʒɒrəti/", us:"/məˈdʒɔːrəti/", d:"n. 大多数；大部分", ex:"The majority of respondents supported the new policy.", zh:"大多数受访者支持这项新政策。", s:["most","bulk","greater part"], col:"the majority of / in the majority", c:["阅读词汇","写作高分词"]},
+  {w:"manage", uk:"/ˈmænɪdʒ/", us:"/ˈmænɪdʒ/", d:"v. 管理；设法做到", ex:"She manages to balance study and part-time work.", zh:"她设法兼顾学业和兼职。", s:["handle","administer","succeed"], col:"manage to do / manage a team", c:["口语高频词","写作高分词"]},
+  {w:"natural", uk:"/ˈnætʃrəl/", us:"/ˈnætʃrəl/", d:"adj. 自然的；天然的", ex:"The region is rich in natural resources.", zh:"该地区自然资源丰富。", s:["organic","native","inherent"], col:"natural resources / a natural disaster", c:["阅读词汇"]},
+  {w:"obvious", uk:"/ˈɒbviəs/", us:"/ˈɑːbviəs/", d:"adj. 明显的；显然的", ex:"The advantages of the plan are obvious to everyone.", zh:"该计划的优点对每个人来说都很明显。", s:["clear","evident","apparent"], col:"it is obvious that / for obvious reasons", c:["写作高分词"]},
+  {w:"operate", uk:"/ˈɒpəreɪt/", us:"/ˈɑːpəreɪt/", d:"v. 操作；运营；运转", ex:"The factory operates twenty-four hours a day.", zh:"这家工厂一天二十四小时运转。", s:["run","function","manage"], col:"operate a system / operating costs", c:["阅读词汇"]},
+  {w:"oppose", uk:"/əˈpəʊz/", us:"/əˈpoʊz/", d:"v. 反对；抵制", ex:"Many residents oppose the construction of the new highway.", zh:"许多居民反对修建新高速公路。", s:["resist","object to","be against"], col:"oppose a plan / be opposed to", c:["写作高分词"]},
+  {w:"overall", uk:"/ˌəʊvərˈɔːl/", us:"/ˌoʊvərˈɔːl/", d:"adj./adv. 整体的；总体上的", ex:"Overall, the results of the survey were very positive.", zh:"总体而言，调查结果非常积极。", s:["general","total","on the whole"], col:"overall performance / overall cost", c:["写作高分词"]},
+  {w:"participate", uk:"/pɑːˈtɪsɪpeɪt/", us:"/pɑːrˈtɪsɪpeɪt/", d:"v. 参与；参加", ex:"Students are encouraged to participate in class discussions.", zh:"鼓励学生参与课堂讨论。", s:["take part","join in","engage"], col:"participate in / actively participate", c:["写作高分词","口语高频词"]},
+  {w:"perceive", uk:"/pəˈsiːv/", us:"/pərˈsiːv/", d:"v. 感知；认为；看待", ex:"People perceive the same advertisement in different ways.", zh:"人们对同一则广告的感知不同。", s:["see","regard","view"], col:"perceive as / perceive the difference", c:["学术难词"]},
+  {w:"perform", uk:"/pəˈfɔːm/", us:"/pərˈfɔːrm/", d:"v. 执行；表演；表现", ex:"The new system performs well under heavy traffic.", zh:"新系统在高负载下表现良好。", s:["carry out","execute","act"], col:"perform a task / perform well", c:["学术难词"]},
+  {w:"permit", uk:"/pəˈmɪt/", us:"/pərˈmɪt/", d:"v./n. 允许；许可", ex:"Smoking is not permitted in public buildings.", zh:"公共场所禁止吸烟。", s:["allow","authorise","grant"], col:"permit sb to do / a work permit", c:["阅读词汇"]},
+  {w:"predict", uk:"/prɪˈdɪkt/", us:"/prɪˈdɪkt/", d:"v. 预测；预言", ex:"Experts predict that sea levels will continue to rise.", zh:"专家预测海平面将继续上升。", s:["forecast","anticipate","foresee"], col:"predict the future / be predicted to", c:["学术难词","阅读词汇"]},
+  {w:"priority", uk:"/praɪˈɒrəti/", us:"/praɪˈɔːrəti/", d:"n. 优先事项；优先权", ex:"Education should be given top priority in the national budget.", zh:"国家预算应把教育放在首位。", s:["precedence","importance","preference"], col:"top priority / give priority to", c:["写作高分词"]},
+  {w:"proportion", uk:"/prəˈpɔːʃn/", us:"/prəˈpɔːrʃn/", d:"n. 比例；部分", ex:"A large proportion of the population lives in urban areas.", zh:"很大一部分人口生活在城市地区。", s:["percentage","ratio","share"], col:"a high proportion of / in proportion to", c:["阅读词汇"]},
+  {w:"provide", uk:"/prəˈvaɪd/", us:"/prəˈvaɪd/", d:"v. 提供；供给", ex:"The course provides students with practical training.", zh:"这门课为学生提供实践培训。", s:["supply","offer","furnish"], col:"provide sb with / provide services", c:["写作高分词"]},
+  {w:"purchase", uk:"/ˈpɜːtʃəs/", us:"/ˈpɜːrtʃəs/", d:"v./n. 购买", ex:"Customers can purchase tickets online in advance.", zh:"顾客可以提前在线购票。", s:["buy","acquire","obtain"], col:"make a purchase / purchase online", c:["阅读词汇","口语高频词"]},
+  {w:"qualify", uk:"/ˈkwɒlɪfaɪ/", us:"/ˈkwɑːlɪfaɪ/", d:"v. 取得资格；使合格", ex:"She qualified as a teacher after two years of training.", zh:"经过两年培训，她取得了教师资格。", s:["certify","graduate","meet requirements"], col:"qualify for / be qualified as", c:["口语高频词"]},
+  {w:"quantity", uk:"/ˈkwɒntəti/", us:"/ˈkwɑːntəti/", d:"n. 数量；大量", ex:"The quantity of plastic waste is increasing every year.", zh:"塑料垃圾的数量每年都在增加。", s:["amount","volume","number"], col:"a large quantity of / in quantity", c:["阅读词汇"]},
+  {w:"react", uk:"/riˈækt/", us:"/riˈækt/", d:"v. 反应；回应", ex:"People react differently to stressful situations.", zh:"人们对压力情境的反应各不相同。", s:["respond","reply","behave"], col:"react to / react quickly", c:["口语高频词"]},
+  {w:"recover", uk:"/rɪˈkʌvə(r)/", us:"/rɪˈkʌvər/", d:"v. 恢复；康复；找回", ex:"The economy is beginning to recover from the recession.", zh:"经济正开始从衰退中复苏。", s:["regain","recuperate","revive"], col:"recover from / recover losses", c:["阅读词汇","口语高频词"]},
+  {w:"reflect", uk:"/rɪˈflekt/", us:"/rɪˈflekt/", d:"v. 反映；思考；反射", ex:"The data reflects the changing habits of consumers.", zh:"这些数据反映了消费者习惯的变化。", s:["mirror","show","indicate"], col:"reflect on / be reflected in", c:["写作高分词","学术难词"]},
+  {w:"rely", uk:"/rɪˈlaɪ/", us:"/rɪˈlaɪ/", d:"v. 依赖；信赖", ex:"Many students rely on their parents for financial support.", zh:"许多学生在经济上依赖父母。", s:["depend","count","trust"], col:"rely on / rely heavily on", c:["写作高分词"]},
+  {w:"represent", uk:"/ˌreprɪˈzent/", us:"/ˌreprɪˈzent/", d:"v. 代表；体现", ex:"The chart represents the results of the national survey.", zh:"该图表体现了全国调查的结果。", s:["stand for","symbolise","depict"], col:"represent a group / be represented by", c:["阅读词汇"]},
+  {w:"retain", uk:"/rɪˈteɪn/", us:"/rɪˈteɪn/", d:"v. 保持；保留", ex:"It is hard to retain information without regular review.", zh:"不经常复习就难以记住信息。", s:["keep","preserve","maintain"], col:"retain knowledge / retain a record", c:["学术难词"]},
+  {w:"rise", uk:"/raɪz/", us:"/raɪz/", d:"v./n. 上升；增长", ex:"The cost of housing has risen sharply in recent years.", zh:"近年来住房成本急剧上升。", s:["increase","grow","climb"], col:"a rise in / rise sharply", c:["阅读词汇"]},
+  {w:"satisfy", uk:"/ˈsætɪsfaɪ/", us:"/ˈsætɪsfaɪ/", d:"v. 满足；使满意", ex:"The product was redesigned to satisfy customer needs.", zh:"该产品经过重新设计以满足客户需求。", s:["meet","fulfil","please"], col:"satisfy the needs / be satisfied with", c:["阅读词汇"]},
+  {w:"secure", uk:"/sɪˈkjʊə(r)/", us:"/səˈkjʊr/", d:"adj./v. 安全的；获得；使安全", ex:"Online payments should be secure and easy to use.", zh:"在线支付应该安全且易于使用。", s:["safe","protected","obtain"], col:"secure a job / a secure environment", c:["阅读词汇","口语高频词"]},
+  {w:"seek", uk:"/siːk/", us:"/siːk/", d:"v. 寻求；寻找；设法", ex:"Graduates often seek advice from career counsellors.", zh:"毕业生经常向职业顾问寻求建议。", s:["look for","pursue","search"], col:"seek advice / seek employment", c:["写作高分词"]},
+  {w:"select", uk:"/sɪˈlekt/", us:"/sɪˈlekt/", d:"v. 选择；挑选", ex:"Participants were selected randomly from the local population.", zh:"参与者是从当地居民中随机挑选的。", s:["choose","pick","elect"], col:"select from / carefully selected", c:["阅读词汇"]},
+  {w:"sense", uk:"/sens/", us:"/sens/", d:"n./v. 感觉；意义；意识到", ex:"Exercise gives me a sense of achievement and energy.", zh:"运动给我一种成就感和活力。", s:["feeling","meaning","awareness"], col:"a sense of / make sense", c:["口语高频词"]},
+  {w:"separate", uk:"/ˈsepəreɪt/", us:"/ˈsepəreɪt/", d:"v./adj. 分开；单独的", ex:"The waste should be separated into different categories.", zh:"垃圾应按不同类别分开。", s:["divide","split","distinct"], col:"separate A from B / separate rooms", c:["阅读词汇"]},
+  {w:"shift", uk:"/ʃɪft/", us:"/ʃɪft/", d:"n./v. 转变；转移；轮班", ex:"There has been a shift towards renewable energy.", zh:"能源结构已向可再生能源转变。", s:["change","move","transition"], col:"a shift in / night shift", c:["阅读词汇","写作高分词"]},
+  {w:"similar", uk:"/ˈsɪmələ(r)/", us:"/ˈsɪmələr/", d:"adj. 相似的；类似的", ex:"The two studies produced similar results.", zh:"这两项研究得出了相似的结果。", s:["alike","comparable","analogous"], col:"be similar to / a similar pattern", c:["阅读词汇"]},
+  {w:"standard", uk:"/ˈstændəd/", us:"/ˈstændərd/", d:"n./adj. 标准；标准化的", ex:"Living standards have improved considerably in the past decade.", zh:"过去十年生活水平显著提高。", s:["criterion","norm","benchmark"], col:"living standards / meet the standard", c:["阅读词汇"]},
+  {w:"status", uk:"/ˈsteɪtəs/", us:"/ˈsteɪtəs/", d:"n. 地位；身份；状况", ex:"Education can improve a person's social status.", zh:"教育可以提升一个人的社会地位。", s:["position","rank","standing"], col:"social status / marital status", c:["阅读词汇","写作高分词"]},
+  {w:"strategy", uk:"/ˈstrætədʒi/", us:"/ˈstrætədʒi/", d:"n. 策略；战略", ex:"The company developed a new marketing strategy.", zh:"该公司制定了新的营销策略。", s:["plan","approach","tactic"], col:"adopt a strategy / long-term strategy", c:["写作高分词"]},
+  {w:"strengthen", uk:"/ˈstreŋθn/", us:"/ˈstreŋθn/", d:"v. 加强；巩固", ex:"Regular reading can strengthen your vocabulary and writing.", zh:"经常阅读可以加强你的词汇量和写作。", s:["reinforce","boost","consolidate"], col:"strengthen ties / strengthen the ability", c:["写作高分词"]},
+  {w:"submit", uk:"/səbˈmɪt/", us:"/səbˈmɪt/", d:"v. 提交；呈递；屈服", ex:"Please submit your essay before Friday noon.", zh:"请在周五中午前提交论文。", s:["hand in","present","file"], col:"submit an application / submit work", c:["阅读词汇","听力词汇"]},
+  {w:"substitute", uk:"/ˈsʌbstɪtjuːt/", us:"/ˈsʌbstɪtuːt/", d:"n./v. 替代品；代替", ex:"Public transport is a good substitute for driving in the city.", zh:"在城市里，公共交通是开车的好替代品。", s:["replacement","alternative","replace"], col:"a substitute for / substitute A for B", c:["写作高分词"]},
+  {w:"succeed", uk:"/səkˈsiːd/", us:"/səkˈsiːd/", d:"v. 成功；接替", ex:"To succeed, students need both talent and hard work.", zh:"要成功，学生既需要天赋也需要努力。", s:["achieve","thrive","prosper"], col:"succeed in / succeed as", c:["口语高频词","写作高分词"]},
+  {w:"sufficient", uk:"/səˈfɪʃnt/", us:"/səˈfɪʃnt/", d:"adj. 足够的；充分的", ex:"Make sure you have sufficient time to prepare for the exam.", zh:"确保你有足够的时间备考。", s:["enough","adequate","ample"], col:"be sufficient for / sufficient evidence", c:["写作高分词"]},
+  {w:"supply", uk:"/səˈplaɪ/", us:"/səˈplaɪ/", d:"v./n. 供应；供给", ex:"The dam supplies water to several nearby cities.", zh:"这座大坝为附近几座城市供水。", s:["provide","furnish","stock"], col:"supply and demand / water supply", c:["阅读词汇"]},
+  {w:"survive", uk:"/səˈvaɪv/", us:"/sərˈvaɪv/", d:"v. 幸存；生存；挺过", ex:"Small businesses often struggle to survive in a tough economy.", zh:"小企业在艰难的经济环境中往往难以生存。", s:["endure","last","get through"], col:"survive in / survive a crisis", c:["阅读词汇","写作高分词"]},
+  {w:"technique", uk:"/tekˈniːk/", us:"/tekˈniːk/", d:"n. 技术；技巧；方法", ex:"The teacher introduced a new technique for memorising words.", zh:"老师介绍了一种记忆单词的新技巧。", s:["method","skill","approach"], col:"learning techniques / a proven technique", c:["口语高频词","学术难词"]},
+  {w:"tend", uk:"/tend/", us:"/tend/", d:"v. 倾向于；往往会", ex:"People tend to remember information better when it is visual.", zh:"当信息可视化时，人们往往记得更牢。", s:["be inclined","be likely","lean"], col:"tend to / tend towards", c:["写作高分词"]},
+  {w:"term", uk:"/tɜːm/", us:"/tɜːrm/", d:"n. 学期；术语；条款", ex:"The essay should explain key terms at the beginning.", zh:"论文开头应解释关键术语。", s:["word","period","condition"], col:"in terms of / a technical term", c:["阅读词汇"]},
+  {w:"tradition", uk:"/trəˈdɪʃn/", us:"/trəˈdɪʃn/", d:"n. 传统；惯例", ex:"The festival is an important tradition in the local community.", zh:"这个节日是当地社区的重要传统。", s:["custom","heritage","convention"], col:"a long tradition / by tradition", c:["口语高频词","写作高分词"]},
+  {w:"transfer", uk:"/trænsˈfɜː(r)/", us:"/ˈtrænsfɜːr/", d:"v./n. 转移；转让；换乘", ex:"You need to transfer to another line at the next station.", zh:"你需要在下一站换乘另一条线路。", s:["move","shift","relocate"], col:"transfer to / a bank transfer", c:["听力词汇","阅读词汇"]},
+  {w:"treat", uk:"/triːt/", us:"/triːt/", d:"v. 对待；治疗；请客", ex:"All customers should be treated with respect.", zh:"所有顾客都应受到尊重对待。", s:["handle","deal with","regard"], col:"treat as / treat a disease", c:["阅读词汇"]},
+  {w:"trend", uk:"/trend/", us:"/trend/", d:"n. 趋势；潮流", ex:"The trend towards online shopping is unlikely to reverse.", zh:"网购趋势不太可能逆转。", s:["tendency","movement","pattern"], col:"a growing trend / follow the trend", c:["写作高分词"]},
+  {w:"unique", uk:"/juˈniːk/", us:"/juˈniːk/", d:"adj. 独特的；独一无二的", ex:"Each region has its own unique culture and cuisine.", zh:"每个地区都有自己独特的文化和美食。", s:["distinctive","special","exclusive"], col:"be unique to / a unique opportunity", c:["口语高频词","写作高分词"]},
+  {w:"utilize", uk:"/ˈjuːtəlaɪz/", us:"/ˈjuːtəlaɪz/", d:"v. 利用；使用", ex:"The project utilizes recycled materials to cut costs.", zh:"该项目利用回收材料来降低成本。", s:["use","employ","make use of"], col:"utilize resources / fully utilize", c:["学术难词","写作高分词"]},
+  {w:"valid", uk:"/ˈvælɪd/", us:"/ˈvælɪd/", d:"adj. 有效的；有根据的", ex:"The ticket is valid for three days from the date of issue.", zh:"车票自发售之日起三天内有效。", s:["legitimate","sound","effective"], col:"valid for / a valid argument", c:["学术难词"]},
+  {w:"value", uk:"/ˈvæljuː/", us:"/ˈvæljuː/", d:"n./v. 价值；重视", ex:"Reading books adds great value to personal development.", zh:"阅读书籍对个人发展很有价值。", s:["worth","importance","benefit"], col:"place value on / value education", c:["写作高分词","口语高频词"]},
+  {w:"vehicle", uk:"/ˈviːəkl/", us:"/ˈviːəkl/", d:"n. 车辆；交通工具；载体", ex:"Electric vehicles are becoming increasingly popular.", zh:"电动汽车越来越受欢迎。", s:["car","transport","means"], col:"electric vehicle / a vehicle for", c:["阅读词汇"]},
+  {w:"version", uk:"/ˈvɜːʃn/", us:"/ˈvɜːrʒn/", d:"n. 版本；说法", ex:"The latest version of the software fixes several bugs.", zh:"该软件的最新版本修复了几个错误。", s:["edition","variant","form"], col:"a new version / the original version", c:["阅读词汇","口语高频词"]},
+  {w:"view", uk:"/vjuː/", us:"/vjuː/", d:"n./v. 看法；视野；看待", ex:"In my view, the benefits of tourism outweigh its drawbacks.", zh:"在我看来，旅游业的利大于弊。", s:["opinion","perspective","consider"], col:"in my view / a point of view", c:["写作高分词","口语高频词"]},
+  {w:"volume", uk:"/ˈvɒljuːm/", us:"/ˈvɑːljuːm/", d:"n. 音量；容量；量；卷", ex:"The volume of traffic increases during the rush hour.", zh:"高峰时段车流量增加。", s:["amount","capacity","quantity"], col:"sales volume / the volume of", c:["阅读词汇"]},
+  {w:"welfare", uk:"/ˈwelfeə(r)/", us:"/ˈwelfer/", d:"n. 福利；福祉", ex:"The government spends a large share of its budget on welfare.", zh:"政府将大部分预算用于福利。", s:["well-being","benefit","support"], col:"social welfare / child welfare", c:["阅读词汇","写作高分词"]},
+  {w:"whereas", uk:"/ˌweərˈæz/", us:"/ˌwerˈæz/", d:"conj. 而；然而", ex:"City life is fast-paced, whereas rural life is much slower.", zh:"城市生活节奏快，而乡村生活则慢得多。", s:["while","whilst","but"], col:"whereas ... / whereas previously", c:["写作高分词"]},
+  {w:"emerge", uk:"/iˈmɜːdʒ/", us:"/iˈmɜːrdʒ/", d:"v. 出现；显现；兴起", ex:"New challenges emerged as the city continued to grow.", zh:"随着城市不断发展，新的挑战出现了。", s:["appear","arise","surface"], col:"emerge from / gradually emerge", c:["学术难词"]},
+  {w:"endure", uk:"/ɪnˈdjʊə(r)/", us:"/ɪnˈdʊr/", d:"v. 忍受；持续；持久", ex:"The building has endured more than a century of use.", zh:"这座建筑已经使用了超过一个世纪。", s:["bear","tolerate","withstand"], col:"endure hardship / long-lasting", c:["学术难词"]},
+  {w:"exceed", uk:"/ɪkˈsiːd/", us:"/ɪkˈsiːd/", d:"v. 超过；超出", ex:"The final cost exceeded the original estimate by twenty percent.", zh:"最终成本比最初估计高出百分之二十。", s:["surpass","overtake","top"], col:"exceed expectations / exceed the limit", c:["学术难词"]},
+  {w:"exploit", uk:"/ɪkˈsplɔɪt/", us:"/ɪkˈsplɔɪt/", d:"v. 利用；开发；剥削", ex:"Companies should exploit technology to improve customer service.", zh:"公司应利用技术改善客户服务。", s:["utilize","harness","take advantage of"], col:"exploit resources / fully exploit", c:["学术难词"]},
+  {w:"monitor", uk:"/ˈmɒnɪtə(r)/", us:"/ˈmɑːnɪtər/", d:"v./n. 监测；监控；显示器", ex:"Doctors monitor patients' blood pressure regularly.", zh:"医生定期监测病人的血压。", s:["observe","track","supervise"], col:"monitor progress / monitor the situation", c:["学术难词"]},
+  {w:"neglect", uk:"/nɪˈɡlekt/", us:"/nɪˈɡlekt/", d:"v./n. 忽视；疏忽", ex:"We should not neglect the needs of elderly people.", zh:"我们不应忽视老年人的需求。", s:["ignore","overlook","disregard"], col:"neglect the importance / be neglected", c:["学术难词","写作高分词"]},
+  {w:"obstacle", uk:"/ˈɒbstəkl/", us:"/ˈɑːbstəkl/", d:"n. 障碍；阻碍", ex:"Lack of funding is the biggest obstacle to the research.", zh:"资金不足是这项研究最大的障碍。", s:["barrier","hindrance","block"], col:"a major obstacle / overcome an obstacle", c:["写作高分词"]},
+  {w:"prohibit", uk:"/prəˈhɪbɪt/", us:"/proʊˈhɪbɪt/", d:"v. 禁止；阻止", ex:"The law prohibits the sale of cigarettes to minors.", zh:"法律禁止向未成年人出售香烟。", s:["ban","forbid","bar"], col:"prohibit sb from doing / be prohibited", c:["学术难词"]},
+  {w:"reluctant", uk:"/rɪˈlʌktənt/", us:"/rɪˈlʌktənt/", d:"adj. 不情愿的；勉强的", ex:"Many employees are reluctant to work overtime without pay.", zh:"许多员工不情愿无偿加班。", s:["unwilling","hesitant","disinclined"], col:"be reluctant to / reluctant agreement", c:["学术难词"]},
+  {w:"resemble", uk:"/rɪˈzembl/", us:"/rɪˈzembl/", d:"v. 像；类似于", ex:"The new building closely resembles an old European cathedral.", zh:"这座新建筑与古老的欧洲大教堂十分相似。", s:["look like","mirror","similar"], col:"closely resemble / resemble in", c:["学术难词"]},
+  {w:"specify", uk:"/ˈspesɪfaɪ/", us:"/ˈspesɪfaɪ/", d:"v. 明确说明；指定", ex:"The contract specifies the exact delivery date.", zh:"合同明确规定了具体的交货日期。", s:["state","define","detail"], col:"specify the requirements / as specified", c:["学术难词"]},
+  {w:"tolerate", uk:"/ˈtɒləreɪt/", us:"/ˈtɑːləreɪt/", d:"v. 容忍；忍受；容许", ex:"The school will not tolerate any form of bullying.", zh:"学校不容忍任何形式的欺凌。", s:["bear","accept","endure"], col:"tolerate differences / cannot tolerate", c:["学术难词"]},
+  {w:"tremendous", uk:"/trəˈmendəs/", us:"/trəˈmendəs/", d:"adj. 巨大的；极好的", ex:"The internet has had a tremendous impact on education.", zh:"互联网对教育产生了巨大影响。", s:["enormous","huge","immense"], col:"tremendous impact / tremendous effort", c:["写作高分词"]},
+  {w:"vast", uk:"/vɑːst/", us:"/væst/", d:"adj. 巨大的；广阔的；大量的", ex:"The desert covers a vast area of the country.", zh:"这片沙漠覆盖了该国广袤的区域。", s:["enormous","immense","extensive"], col:"a vast amount of / vast areas", c:["阅读词汇"]}
+];
+
+/* ============================================================
+ *  二、应用逻辑区
+ * ============================================================ */
+"use strict";
+/* ============================================================
+ *  0. 基础工具函数
+ * ============================================================ */
+function $(s){return document.querySelector(s)}
+function $$(s){return Array.from(document.querySelectorAll(s))}
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const DAY=86400000;
+function todayStr(){const d=new Date();return todayStrOf(d);}
+function todayStrOf(d){const m=String(d.getMonth()+1).padStart(2,'0');const day=String(d.getDate()).padStart(2,'0');return d.getFullYear()+'-'+m+'-'+day;}
+function startOfToday(){const d=new Date();d.setHours(0,0,0,0);return d.getTime();}
+function normalize(s){return String(s||'').trim().toLowerCase();}
+/* Toast 轻提示 */
+let toastTimer=null;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* ============================================================
+ *  1. 本地存储（localStorage：刷新不丢数据）
+ * ============================================================ */
+const CATS=['听力词汇','阅读词汇','写作高分词','口语高频词','学术难词'];
+const DEFAULT_STATE={
+  review:{},        // 艾宾浩斯复习计划：word -> {stage:0-5, next:下次复习时间戳}
+  mastered:[],      // 已掌握单词（标记过"已掌握"）
+  favs:[],          // 生词本收藏
+  wrong:[],         // 错题本：[{w,times,last}]
+  history:{},       // 每日背诵量：'YYYY-MM-DD' -> 次数
+  correct:0, total:0, // 累计答题正确数/总数（用于正确率）
+  streak:0, lastActive:0, // 连续学习天数
+  todaysPicks:[],   // 今日优先背诵清单（从词库"加入今日背诵"）
+  settings:{theme:'light',accent:'en-GB',rate:0.9}
+};
+let state=loadState();
+function loadState(){
+  try{
+    const raw=localStorage.getItem('ielts_vocab_state_v1');
+    if(raw){const s=JSON.parse(raw);return Object.assign({},DEFAULT_STATE,s,{settings:Object.assign({},DEFAULT_STATE.settings,s.settings)});}
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_STATE));
+}
+function saveState(){try{localStorage.setItem('ielts_vocab_state_v1',JSON.stringify(state));}catch(e){toast('本地存储失败（可能处于隐私模式）');}}
+
+/* 词库索引：加速按单词查找 */
+const wordMap={};
+WORDS.forEach(w=>{wordMap[w.w]=w;});
+
+/* ============================================================
+ *  2. 发音朗读（浏览器原生 Web Speech API，无需任何第三方）
+ * ============================================================ */
+function speakText(text,accent){
+  if(!('speechSynthesis' in window)){toast('当前浏览器不支持语音朗读');return;}
+  const u=new SpeechSynthesisUtterance(text);
+  const want=accent||state.settings.accent;
+  u.lang=want;u.rate=parseFloat(state.settings.rate)||0.9;
+  const voices=speechSynthesis.getVoices();
+  const v=voices.find(x=>x.lang&&x.lang.toLowerCase().replace('_','-').startsWith(want.toLowerCase()));
+  if(v){u.voice=v;u.lang=v.lang;}
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+/* 朗读单词（kind: uk=英音 / us=美音） */
+function speakWord(kind){
+  if(!currentWord)return;
+  speakText(currentWord.w, kind==='us'?'en-US':'en-GB');
+}
+
+/* ============================================================
+ *  3. 艾宾浩斯记忆调度
+ *  熟悉→间隔推进(1/2/4/7/15/30天)；待复习→明天；陌生→今天内重练
+ * ============================================================ */
+const INTERVALS=[1,2,4,7,15,30];
+function scheduleReview(word,result){
+  const r=state.review[word];
+  if(result==='known'){
+    // 标记已掌握：加入掌握列表，并进入间隔复习
+    if(!state.mastered.includes(word))state.mastered.push(word);
+    const stage=r?Math.min(r.stage+1,INTERVALS.length-1):0;
+    if(stage>=INTERVALS.length-1){
+      // 已到最长间隔（30天）→ 长期掌握，不再排期
+      delete state.review[word];
+    }else{
+      state.review[word]={stage:stage,next:startOfToday()+INTERVALS[stage]*DAY};
+    }
+  }else if(result==='fuzzy'){
+    const stage=r?Math.max(r.stage-1,0):0;
+    state.review[word]={stage:stage,next:startOfToday()+1*DAY};
+  }else{ // unknown
+    state.review[word]={stage:0,next:startOfToday()};
+    addWrong(word);
+  }
+  saveState();
+}
+/* 判断是否新词（从未学过） */
+function isNewWord(w){return !state.review[w.w] && !state.mastered.includes(w.w);}
+/* 今日待复习清单 */
+function getDueWords(){
+  const now=startOfToday();
+  return WORDS.filter(w=>{const r=state.review[w.w];return r&&r.next<=now;});
+}
+
+/* ============================================================
+ *  4. 连续学习天数 + 学习记录
+ * ============================================================ */
+function updateStreak(){
+  const t=startOfToday();
+  if(state.lastActive===t)return state.streak;
+  if(state.lastActive===t-DAY)state.streak+=1;
+  else state.streak=1;
+  state.lastActive=t;saveState();
+  return state.streak;
+}
+function recordStudy(){
+  updateStreak();
+  const t=todayStr();state.history[t]=(state.history[t]||0)+1;
+  saveState();
+}
+/* 错题本 */
+function addWrong(word){
+  const rec=state.wrong.find(x=>x.w===word);
+  if(rec){rec.times=(rec.times||1)+1;rec.last=todayStr();}
+  else state.wrong.push({w:word,times:1,last:todayStr()});
+  saveState();
+}
+
+/* ============================================================
+ *  5. 视图切换（导航）
+ * ============================================================ */
+function switchView(name){
+  $$('.nav-links a').forEach(a=>a.classList.toggle('active',a.dataset.view===name));
+  $$('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));
+  if(name==='home')renderHome();
+  if(name==='library')renderLibrary();
+  if(name==='fav')renderFavs();
+  if(name==='stats')renderStats();
+  if(name==='quiz'){ if(quizState&&!quizState.done){$('#quizRun').classList.remove('hidden');$('#quizSetup').classList.add('hidden');$('#quizResult').classList.add('hidden');} }
+  window.scrollTo({top:0});
+}
+
+/* ============================================================
+ *  6. 首页：任务概览 + 卡片背诵会话
+ * ============================================================ */
+let session=null;   // 当前背诵会话 {list,idx,mode}
+let currentWord=null; // 当前展示的单词对象
+
+function renderHome(){
+  const newCount=WORDS.filter(w=>isNewWord(w)).length;
+  const due=getDueWords().length;
+  $('#newCount').textContent=newCount;
+  $('#reviewCount').textContent=due;
+  $('#masteredCountHome').textContent=state.mastered.length;
+  const now=new Date();
+  $('#todayDate').textContent=`今天是 ${now.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'})} · 已连续学习 ${state.streak} 天`;
+  const h=now.getHours();
+  $('#homeGreeting').textContent=h<12?'早上好，今天继续背词':(h<18?'下午好，今天继续背词':'晚上好，今天继续背词');
+  if(session){renderSessionCard();}
+  else{
+    $('#sessionArea').innerHTML=`<div style="background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:34px 20px;text-align:center;color:var(--ink-soft);font-size:14px">
+      点击上方「开始学习」或「开始复习」开始今天的背诵。<br>
+      也可以去 <a href="javascript:switchView('library')">分类词库</a> 挑选指定分类加入今日背诵。
+    </div>`;
+  }
+}
+/* 开始会话：new=新词 / review=复习 / fav=生词本背诵 */
+function startSession(mode){
+  let list=[];
+  if(mode==='new'){
+    const picks=state.todaysPicks.map(w=>wordMap[w]).filter(o=>o&&isNewWord(o));
+    const others=WORDS.filter(w=>isNewWord(w)&&!state.todaysPicks.includes(w.w));
+    list=[...picks,...shuffle(others)];
+  }else if(mode==='review'){
+    list=getDueWords();
+  }else if(mode==='fav'){
+    list=state.favs.map(w=>wordMap[w]).filter(Boolean);
+  }
+  if(!list.length){toast(mode==='review'?'今天没有待复习的单词，很棒！':'暂时没有可学习的单词');renderHome();return;}
+  session={list:list,idx:0,mode:mode};
+  renderSessionCard();
+}
+function sessionCardHtml(){
+  return `
+  <div class="flip-wrap">
+    <div class="flip-card" id="flipCard" onclick="toggleFlip()">
+      <div class="face front">
+        <div class="cats" id="fcCats"></div>
+        <div class="word-big" id="fcWord"></div>
+        <div class="hint">轻触卡片，查看音标 · 释义 · 例句</div>
+      </div>
+      <div class="face back">
+        <div class="ph-row">
+          <span class="ph-lab">英</span><button class="ph-btn" onclick="event.stopPropagation();speakWord('uk')">🔊 <span id="fcUk"></span></button>
+          <span class="ph-lab">美</span><button class="ph-btn" onclick="event.stopPropagation();speakWord('us')">🔊 <span id="fcUs"></span></button>
+        </div>
+        <div class="def" id="fcDef"></div>
+        <div class="block ex"><b>例句</b><span id="fcEx"></span></div>
+        <div class="block ex-zh" id="fcZh"></div>
+        <div class="block col"><b>搭配</b><span id="fcCol"></span></div>
+        <div class="block syn"><b>同义</b><span id="fcSyn"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card-actions">
+    <button class="act-unknown" onclick="markCard('unknown')">陌生</button>
+    <button class="act-fuzzy" onclick="markCard('fuzzy')">待复习</button>
+    <button class="act-known" onclick="markCard('known')">已掌握</button>
+  </div>
+  <div class="session-nav">
+    <span class="prog" id="sessionProgress"></span>
+    <div class="ops">
+      <button id="btnFav" onclick="toggleFavCurrent()">☆ 收藏</button>
+      <button onclick="nextCard(true)">跳过 →</button>
+    </div>
+  </div>`;
+}
+function renderSessionCard(){
+  if(!session)return;
+  const w=session.list[session.idx];
+  if(!w){endSession();return;}
+  currentWord=w;
+  $('#sessionArea').innerHTML=sessionCardHtml();
+  $('#sessionProgress').textContent=`第 ${session.idx+1} / ${session.list.length} 个`;
+  // 填充卡片正面
+  $('#fcWord').textContent=w.w;
+  $('#fcCats').innerHTML=(w.c||[]).map(c=>`<span class="cat-tag">${c}</span>`).join('');
+  // 填充反面
+  $('#fcUk').textContent=w.uk; $('#fcUs').textContent=w.us;
+  $('#fcDef').textContent=w.d;
+  $('#fcEx').textContent=w.ex; $('#fcZh').textContent='（'+w.zh+'）';
+  $('#fcCol').innerHTML=`<span>${w.col}</span>`;
+  $('#fcSyn').innerHTML=(w.s||[]).map(s=>`<em>${s}</em>`).join(' / ');
+  // 收藏按钮状态
+  updateFavBtn();
+  $('#flipCard').classList.remove('flipped');
+}
+function toggleFlip(){const c=$('#flipCard');if(c)c.classList.toggle('flipped');}
+function updateFavBtn(){
+  const b=$('#btnFav');if(!b||!currentWord)return;
+  const faved=state.favs.includes(currentWord.w);
+  b.textContent=faved?'★ 已收藏':'☆ 收藏';
+  b.classList.toggle('faved',faved);
+}
+function toggleFavCurrent(){if(!currentWord)return;toggleFav(currentWord.w);updateFavBtn();}
+function toggleFav(word){
+  const i=state.favs.indexOf(word);
+  if(i>=0){state.favs.splice(i,1);toast('已移出生词本');}
+  else{state.favs.push(word);toast('已加入生词本');}
+  saveState();renderFavs();
+  // 若正在词库页，刷新列表以同步"收藏/取消收藏"按钮文字
+  if($('#view-library').classList.contains('active'))renderLibrary();
+}
+function markCard(result){
+  if(!session||!currentWord)return;
+  scheduleReview(currentWord.w,result);
+  recordStudy();
+  nextCard(false);
+}
+function nextCard(skip){
+  if(!session)return;
+  session.idx++;
+  if(session.idx>=session.list.length){
+    toast('本组完成，休息一下！');
+    endSession();
+    return;
+  }
+  renderSessionCard();
+}
+function endSession(){
+  session=null;currentWord=null;
+  renderHome();
+}
+
+/* ============================================================
+ *  7. 分类词库：筛选 + 搜索 + 词条展开
+ * ============================================================ */
+let libCat='all', libQuery='';
+function setLibCat(c){libCat=c;renderCatTabs();renderLibrary();}
+function renderCatTabs(){
+  const el=$('#catTabs');
+  const all=`<button class="${libCat==='all'?'active':''}" onclick="setLibCat('all')">全部 (${WORDS.length})</button>`;
+  const cats=CATS.map(c=>{const n=WORDS.filter(w=>w.c&&w.c.includes(c)).length;return `<button class="${libCat===c?'active':''}" onclick="setLibCat('${c}')">${c} (${n})</button>`;}).join('');
+  el.innerHTML=all+cats;
+}
+function filteredLib(){
+  const q=libQuery.trim().toLowerCase();
+  return WORDS.filter(w=>{
+    if(libCat!=='all'&&!(w.c&&w.c.includes(libCat)))return false;
+    if(!q)return true;
+    return w.w.toLowerCase().includes(q)||w.d.toLowerCase().includes(q)||(w.s&&w.s.some(s=>s.toLowerCase().includes(q)));
+  });
+}
+function renderLibrary(){
+  const list=filteredLib();
+  $('#libCount').textContent=`共 ${list.length} 词`;
+  const el=$('#libList');
+  if(!list.length){el.innerHTML='<p style="color:var(--ink-soft);text-align:center;padding:20px">没有匹配的单词</p>';return;}
+  el.innerHTML=list.map(w=>wordItemHtml(w,false)).join('');
+}
+function wordItemHtml(w,isFav){
+  const faved=state.favs.includes(w.w);
+  const det=`
+    <div class="wi-detail">
+      <div class="row"><b>美音</b>${w.us}</div>
+      <div class="row"><b>例句</b>${w.ex} <span style="color:var(--ink-soft)">（${w.zh}）</span></div>
+      <div class="row"><b>同义替换</b>${w.s.join(' / ')}</div>
+      <div class="row"><b>写作搭配</b><span class="col-highlight">${w.col}</span></div>
+      <div class="btn-row">
+        <button onclick="event.stopPropagation();speakText('${w.w}','en-GB')">英音</button>
+        <button onclick="event.stopPropagation();speakText('${w.w}','en-US')">美音</button>
+        <button onclick="event.stopPropagation();toggleFav('${w.w}')">${faved?'取消收藏':'收藏'}</button>
+        ${isFav
+          ?`<button class="primary" onclick="event.stopPropagation();removeFav('${w.w}')">移出生词本</button>`
+          :`<button class="primary" onclick="event.stopPropagation();addToToday('${w.w}')">加入今日背诵</button>`}
+      </div>
+    </div>`;
+  return `<div class="word-item" id="wi-${w.w}">
+    <div class="wi-head" onclick="toggleLibDetail('${w.w}')">
+      <span class="wi-word">${w.w}</span>
+      <span class="wi-ph">${w.uk}</span>
+      <span class="wi-def">${w.d}</span>
+      <span class="wi-cats">${(w.c||[]).map(c=>`<span class="cat-tag">${c}</span>`).join('')}</span>
+      <span class="wi-arrow">▼</span>
+    </div>${det}</div>`;
+}
+function toggleLibDetail(word){
+  const el=$('#wi-'+word);if(el)el.classList.toggle('open');
+}
+function addToToday(word){
+  if(!state.todaysPicks.includes(word)){state.todaysPicks.push(word);saveState();toast('已加入今日背诵清单');}
+  else toast('已在今日背诵清单中');
+}
+function addCurrentLibToToday(){
+  const list=filteredLib();let added=0;
+  list.forEach(w=>{if(!state.todaysPicks.includes(w.w)){state.todaysPicks.push(w.w);added++;}});
+  if(added){saveState();toast(`已把 ${added} 个词加入今日背诵`);}
+  else toast('这些词已在今日背诵清单中');
+}
+
+/* ============================================================
+ *  8. 自测刷题（4 种题型 + 错题本 + 重做）
+ * ============================================================ */
+let quizState=null;
+let quizType='mc',quizPool='all',quizN=20;
+const MODE_NAMES={mc:'英汉选词',fill:'汉译英填空',listen:'听音辨词',sentence:'真题例句填空'};
+function modeName(t){return MODE_NAMES[t]||t;}
+function buildQuizPool(pool){
+  if(pool==='all')return WORDS.slice();
+  if(pool==='seen')return WORDS.filter(w=>state.review[w.w]||state.mastered.includes(w.w));
+  if(pool==='fav')return state.favs.map(w=>wordMap[w]).filter(Boolean);
+  if(pool==='wrong')return state.wrong.map(x=>wordMap[x.w]).filter(Boolean);
+  return [];
+}
+function makeQuestion(type,w,pool){
+  if(type==='mc'){
+    const others=shuffle(pool).filter(x=>x.w!==w.w&&x.d!==w.d);
+    const options=shuffle([w.d,...others.slice(0,3).map(x=>x.d)]);
+    return {type:'mc',word:w,options:options,answer:w.d};
+  }
+  if(type==='fill')return {type:'fill',word:w,prompt:w.d,answer:w.w};
+  if(type==='listen')return {type:'listen',word:w,prompt:'点击下方按钮听发音，然后拼写这个单词',answer:w.w};
+  if(type==='sentence'){
+    const ex=w.ex;
+    const idx=ex.toLowerCase().indexOf(w.w.toLowerCase());
+    const prompt=idx>=0?ex.slice(0,idx)+' ______ '+ex.slice(idx+w.w.length):ex+' ( ____ )';
+    return {type:'sentence',word:w,prompt:'<span class="blank">'+(idx>=0?'在空白处填入正确单词':'')+'</span> '+prompt,answer:w.w};
+  }
+  return null;
+}
+function startQuiz(){
+  const pool=buildQuizPool(quizPool);
+  if(!pool.length){toast('该词源暂时没有可出题的单词');return;}
+  const picked=shuffle(pool);
+  const n=quizN==='all'?picked.length:Math.min(parseInt(quizN)||10,picked.length);
+  const qs=[];for(let i=0;i<n;i++)qs.push(makeQuestion(quizType,picked[i],pool));
+  quizState={questions:qs,idx:0,correct:0,wrong:[],done:false};
+  $('#quizSetup').classList.add('hidden');
+  $('#quizResult').classList.add('hidden');
+  $('#quizRun').classList.remove('hidden');
+  renderQuestion();
+}
+function renderQuestion(){
+  if(!quizState)return;
+  const q=quizState.questions[quizState.idx];
+  const total=quizState.questions.length;
+  $('#qBar').style.width=Math.round(quizState.idx/total*100)+'%';
+  const el=$('#qBody');
+  if(q.type==='mc'){
+    el.innerHTML=`
+      <div class="q-meta">第 ${quizState.idx+1} / ${total} 题 · 英汉选词</div>
+      <div class="q-prompt">请选择与下列单词对应的中文释义：<div class="big-word">${q.word.w}</div></div>
+      <div class="options" id="mcOptions">${q.options.map((o,i)=>`<button data-i="${i}">${o}</button>`).join('')}</div>
+      <div class="q-feedback" id="qFb"></div>
+      <button class="q-next hidden" id="qNext" onclick="quizNext()">下一题 →</button>`;
+    $$('#mcOptions button').forEach(b=>{b.onclick=()=>answerMC(parseInt(b.dataset.i));});
+  }else{
+    const audioBtn=q.type==='listen'?`<div class="q-audio-row"><button onclick="speakText('${q.word.w}','${state.settings.accent}')">🔊 播放发音</button><span style="font-size:12px;color:var(--ink-soft)">可反复播放</span></div>`:'';
+    el.innerHTML=`
+      <div class="q-meta">第 ${quizState.idx+1} / ${total} 题 · ${modeName(q.type)}</div>
+      ${audioBtn}
+      <div class="q-prompt">${q.prompt}</div>
+      <input class="q-input" id="qInput" autocomplete="off" placeholder="在此输入英文单词…" onkeydown="if(event.key==='Enter')submitTyped()">
+      <button class="q-next" id="qSubmit" onclick="submitTyped()">提交答案</button>
+      <div class="q-feedback" id="qFb"></div>
+      <button class="q-next hidden" id="qNext" onclick="quizNext()">下一题 →</button>`;
+    setTimeout(()=>{const i=$('#qInput');if(i)i.focus();},60);
+  }
+}
+function answerMC(i){
+  const q=quizState.questions[quizState.idx];
+  const btns=$$('#mcOptions button');
+  btns.forEach(b=>b.disabled=true);
+  const chosen=q.options[i];
+  const isRight=chosen===q.answer;
+  if(isRight){quizState.correct++;btns[i].classList.add('correct');}
+  else{
+    btns[i].classList.add('wrong');
+    const ci=q.options.indexOf(q.answer);
+    if(ci>=0)btns[ci].classList.add('correct');
+    quizState.wrong.push(q.word);addWrong(q.word.w);
+  }
+  state.total++;if(isRight)state.correct++;saveState(); // 逐题实时累计正确率
+  showFeedback(isRight,q,'');
+}
+function submitTyped(){
+  const q=quizState.questions[quizState.idx];
+  const input=$('#qInput');
+  const val=normalize(input?input.value:'');
+  if(!val){toast('请输入答案');return;}
+  const isRight=val===normalize(q.answer);
+  $('#qSubmit').disabled=true;
+  if(isRight)quizState.correct++;
+  else{quizState.wrong.push(q.word);addWrong(q.word.w);}
+  state.total++;if(isRight)state.correct++;saveState(); // 逐题实时累计正确率
+  showFeedback(isRight,q,input.value);
+}
+function showFeedback(isRight,q,userAnswer){
+  const fb=$('#qFb');
+  fb.className='q-feedback show '+(isRight?'ok':'no');
+  fb.innerHTML=feedbackHtml(q,userAnswer);
+  const n=$('#qNext');if(n)n.classList.remove('hidden');
+}
+function feedbackHtml(q,userAnswer){
+  const w=q.word;
+  let h=`<b class="fb-word">${w.w}</b> ${w.uk}<br>释义：${w.d}<br>例句：${w.ex}<br><span style="color:var(--ink-soft)">${w.zh}</span>`;
+  if(userAnswer&&normalize(userAnswer)!==normalize(q.answer))h+=`<br><span style="color:var(--red)">你的答案：${userAnswer}</span>`;
+  return h;
+}
+function quizNext(){
+  quizState.idx++;
+  if(quizState.idx>=quizState.questions.length){showResult();return;}
+  renderQuestion();
+}
+function showResult(){
+  const qs=quizState.questions,total=qs.length,correct=quizState.correct;
+  const acc=total?Math.round(correct/total*100):0;
+  updateStreak();saveState();
+  let html=`<div class="result-box">
+    <div class="score">${correct}/${total}</div>
+    <div class="score-sub">正确率 ${acc}% ${acc>=80?'· 很棒！':acc>=60?'· 继续加油！':'· 建议用错题重做巩固'}</div>
+    <div class="result-actions">
+      <button onclick="restartQuiz()">再测一次</button>
+      <button class="ghost" onclick="redoWrong()">重做错题</button>
+      <button class="ghost" onclick="backToQuizSetup()">返回选题</button>
+    </div></div>`;
+  if(quizState.wrong.length){
+    html+=`<div class="wrong-title">错题已自动收入错题本（${quizState.wrong.length} 个）：</div><div class="word-list">`;
+    html+=quizState.wrong.map(w=>{
+      const o=w&&w.word?w:null;const wo=o||w;
+      return `<div class="word-item"><div class="wi-head" style="cursor:default">
+        <span class="wi-word">${wo.w}</span><span class="wi-ph">${wo.uk||''}</span><span class="wi-def">${wo.d||''}</span>
+      </div></div>`;
+    }).join('')+'</div>';
+  }
+  $('#quizRun').classList.add('hidden');
+  $('#quizSetup').classList.add('hidden');
+  const r=$('#quizResult');r.classList.remove('hidden');r.innerHTML=html;
+  quizState.done=true;
+}
+function restartQuiz(){quizState=null;$('#quizResult').classList.add('hidden');$('#quizSetup').classList.remove('hidden');}
+function backToQuizSetup(){restartQuiz();}
+function redoWrong(){
+  if(!state.wrong.length){toast('错题本是空的');return;}
+  setQuizPool('wrong');startQuiz();
+}
+function setQuizPool(p){quizPool=p;$$('#poolChips button').forEach(b=>b.classList.toggle('active',b.dataset.pool===p));}
+
+/* ============================================================
+ *  9. 生词本
+ * ============================================================ */
+function removeFav(word){
+  const i=state.favs.indexOf(word);
+  if(i>=0){state.favs.splice(i,1);saveState();toast('已移出生词本');}
+  renderFavs();
+}
+function renderFavs(){
+  $('#favInfo').textContent=`共 ${state.favs.length} 个生词`;
+  const el=$('#favList');
+  if(!state.favs.length){el.innerHTML='<p style="color:var(--ink-soft);text-align:center;padding:20px">生词本是空的。在背词或词库中点「收藏」即可添加。</p>';return;}
+  el.innerHTML=state.favs.map(w=>{const o=wordMap[w];return o?wordItemHtml(o,true):'';}).join('');
+}
+
+/* ============================================================
+ *  10. 学习数据统计
+ * ============================================================ */
+function renderStats(){
+  $('#stToday').textContent=state.history[todayStr()]||0;
+  $('#stMastered').textContent=state.mastered.length;
+  $('#stAcc').textContent=state.total?Math.round(state.correct/state.total*100)+'%':'0%';
+  $('#stStreak').textContent=state.streak;
+  // 近 7 日柱状图（纯 CSS，无外部库）
+  const days=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const key=todayStrOf(d);days.push({key:key,lab:(d.getMonth()+1)+'/'+d.getDate(),val:state.history[key]||0});}
+  const max=Math.max(1,...days.map(d=>d.val));
+  $('#barChart').innerHTML=days.map(d=>`
+    <div class="bar-col"><span class="v">${d.val}</span>
+    <div class="bar" style="height:${Math.max(3,Math.round(d.val/max*100))}%"></div>
+    <span class="d">${d.lab}</span></div>`).join('');
+  // 分类掌握进度
+  $('#catProg').innerHTML=CATS.map(cat=>{
+    const words=WORDS.filter(w=>w.c&&w.c.includes(cat));
+    const ms=words.filter(w=>state.mastered.includes(w.w)).length;
+    const pct=words.length?Math.round(ms/words.length*100):0;
+    return `<div class="prog-row"><span class="lab">${cat}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><span class="pct">${pct}%</span></div>`;
+  }).join('');
+  // 错题统计
+  const ws=$('#wrongStats');
+  if(!state.wrong.length){ws.innerHTML='<p style="color:var(--ink-soft);font-size:13px">暂无错题，继续刷题吧。</p>';}
+  else{
+    const sorted=[...state.wrong].sort((a,b)=>(b.times||0)-(a.times||0)).slice(0,10);
+    ws.innerHTML='<div class="word-list">'+sorted.map(x=>{const o=wordMap[x.w];return `
+      <div class="word-item"><div class="wi-head" style="cursor:default">
+        <span class="wi-word">${x.w}</span><span class="wi-def">${o?o.d:''}</span>
+        <span class="wi-cats"><span class="cat-tag">错 ${x.times||1} 次</span><span class="cat-tag">${x.last||''}</span></span>
+      </div></div>`;}).join('')+'</div>';
+  }
+}
+
+/* ============================================================
+ *  11. 导出 / 打印（生词本、错题本纯文本）
+ * ============================================================ */
+let lastExport={title:'',text:''};
+function openExport(title,text){
+  lastExport={title:title,text:text};
+  $('#modalTitle').textContent=title;
+  $('#modalBody').textContent=text;
+  $('#printArea').textContent=text;
+  $('#modalMask').classList.remove('hidden');
+}
+function closeModal(){$('#modalMask').classList.add('hidden');}
+function downloadText(filename,text){
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=filename;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+function exportFavs(){
+  if(!state.favs.length){toast('生词本为空');return;}
+  const lines=state.favs.map((w,i)=>{const o=wordMap[w];return `${i+1}. ${w}  ${o?o.uk:''}\n    ${o?o.d:''}${o?('\n    例句: '+o.ex):''}`;});
+  openExport('生词本 · 可打印背诵',`雅思词库 · 生词本（共 ${state.favs.length} 词）\n`+('='.repeat(40))+'\n\n'+lines.join('\n\n'));
+}
+function exportWrong(){
+  if(!state.wrong.length){toast('错题本为空');return;}
+  const lines=state.wrong.map((x,i)=>{const o=wordMap[x.w];return `${i+1}. ${x.w}  ${o?o.uk:''}\n    ${o?o.d:''}  （错 ${x.times||1} 次）`;});
+  openExport('错题本 · 可打印背诵',`雅思词库 · 错题本（共 ${state.wrong.length} 词）\n`+('='.repeat(40))+'\n\n'+lines.join('\n\n'));
+}
+
+/* ============================================================
+ *  12. 设置：主题 / 发音 / 数据备份
+ * ============================================================ */
+function applyTheme(){
+  const t=state.settings.theme;
+  const dark=t==='dark'||(t==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  const sel=$('#themeSel');if(sel)sel.value=t;
+  const tb=$('#themeBtn');if(tb)tb.textContent=dark?'☾':'☀';
+}
+function toggleTheme(){
+  state.settings.theme=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  saveState();applyTheme();
+}
+function exportBackup(){
+  downloadText('ielts-backup-'+todayStr()+'.json',JSON.stringify(state,null,2));
+  toast('学习数据已导出为 JSON 备份');
+}
+function importBackupFile(file){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const s=JSON.parse(reader.result);
+      const oldSettings=state.settings;
+      state=Object.assign({},DEFAULT_STATE,s,{settings:Object.assign({},oldSettings,s.settings)});
+      saveState();applyTheme();renderHome();
+      toast('数据导入成功');
+    }catch(e){toast('导入失败：文件格式不正确');}
+  };
+  reader.readAsText(file);
+}
+function resetAllData(){
+  if(!confirm('确定清空全部学习数据吗？（词库本身会保留，此操作不可撤销）'))return;
+  const settings=state.settings;
+  state=JSON.parse(JSON.stringify(DEFAULT_STATE));
+  state.settings=settings;
+  saveState();applyTheme();renderHome();renderFavs();renderLibrary();renderStats();
+  toast('已清空全部学习数据');
+}
+
+/* ============================================================
+ *  13. 事件绑定 + 初始化
+ * ============================================================ */
+function bindEvents(){
+  // 导航
+  $$('.nav-links a').forEach(a=>a.addEventListener('click',()=>switchView(a.dataset.view)));
+  // 首页任务
+  $('#startNewBtn').addEventListener('click',()=>startSession('new'));
+  $('#startReviewBtn').addEventListener('click',()=>startSession('review'));
+  // 词库搜索与筛选
+  $('#searchInput').addEventListener('input',e=>{libQuery=e.target.value;renderLibrary();});
+  $('#searchClear').addEventListener('click',()=>{$('#searchInput').value='';libQuery='';renderLibrary();});
+  $('#libStartBtn').addEventListener('click',addCurrentLibToToday);
+  // 自测：题型 / 词源 / 题数
+  $$('#modeGrid button').forEach(b=>b.addEventListener('click',()=>{
+    quizType=b.dataset.mode;
+    $$('#modeGrid button').forEach(x=>x.classList.toggle('active',x===b));
+  }));
+  $$('#countChips button').forEach(b=>b.addEventListener('click',()=>{
+    quizN=b.dataset.n;
+    $$('#countChips button').forEach(x=>x.classList.toggle('active',x===b));
+  }));
+  $$('#poolChips button').forEach(b=>b.addEventListener('click',()=>setQuizPool(b.dataset.pool)));
+  $('#quizStartBtn').addEventListener('click',startQuiz);
+  // 生词本
+  $('#favPracticeBtn').addEventListener('click',()=>startSession('fav'));
+  $('#favExportBtn').addEventListener('click',exportFavs);
+  $('#favPrintBtn').addEventListener('click',()=>{exportFavs();setTimeout(()=>window.print(),200);});
+  // 设置
+  $('#themeBtn').addEventListener('click',toggleTheme);
+  $('#themeSel').addEventListener('change',e=>{state.settings.theme=e.target.value;saveState();applyTheme();});
+  $('#accentSel').addEventListener('change',e=>{state.settings.accent=e.target.value;saveState();});
+  $('#rateRange').addEventListener('change',e=>{state.settings.rate=parseFloat(e.target.value);saveState();});
+  $('#exportDataBtn').addEventListener('click',exportBackup);
+  $('#importDataBtn').addEventListener('click',()=>$('#importDataFile').click());
+  $('#importDataFile').addEventListener('change',e=>{if(e.target.files[0])importBackupFile(e.target.files[0]);e.target.value='';});
+  $('#resetDataBtn').addEventListener('click',resetAllData);
+  // 弹窗
+  $('#modalClose').addEventListener('click',closeModal);
+  $('#modalMask').addEventListener('click',e=>{if(e.target.id==='modalMask')closeModal();});
+  $('#modalDownload').addEventListener('click',()=>downloadText((lastExport.title||'导出')+'.txt',lastExport.text));
+  $('#modalPrint').addEventListener('click',()=>window.print());
+  // 键盘快捷键：空格翻卡 / 方向键切换卡片
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+    if(!session)return;
+    if(e.code==='Space'){e.preventDefault();toggleFlip();}
+    else if(e.key==='ArrowRight')nextCard(true);
+  });
+  // 语音引擎异步加载语音列表
+  if('speechSynthesis' in window){
+    speechSynthesis.onvoiceschanged=()=>{/* 预热语音列表，避免首次无声 */};
+    speechSynthesis.getVoices();
+  }
+  // 跟随系统主题变化
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(state.settings.theme==='auto')applyTheme();});
+}
+function init(){
+  applyTheme();
+  renderCatTabs();
+  bindEvents();
+  renderHome();
+  $('#aboutLine').innerHTML=`词库版本 v1.0 · 内置核心词 <b>${WORDS.length}</b> 个（含音标 / 释义 / 真题例句 / 同义替换 / 写作搭配）<br>
+  数据仅保存在本浏览器 localStorage，刷新不丢失；导出后可打印或备份。<br>
+  纯前端实现，零后端、零数据库、无付费接口，双击 HTML 即可离线使用。`;
+}
+init();
+//<<<APP_LOGIC_END>>>
+</script>
+</body>
+</html>
+
+<!-- ============================================================
+ *  ～～～～～～～～ 如何扩充 / 替换雅思单词库 ～～～～～～～～
+ *
+ *  ▍1. 追加新单词（推荐）
+ *    在 <script> 顶部的 const WORDS = [ ... ] 数组里，找到最后一个
+ *    {w:...} 的后面（即 "]；" 之前），按同样格式加一行即可：
+ *
+ *    {w:"sustainable", uk:"/səˈsteɪnəbl/", us:"/səˈsteɪnəbl/",
+ *     d:"adj. 可持续的；可维持的",
+ *     ex:"Sustainable development requires long-term planning.",
+ *     zh:"可持续发展需要长期规划。",
+ *     s:["viable","durable","maintainable"],
+ *     col:"sustainable development / sustainable growth",
+ *     c:["写作高分词","学术难词"]},
+ *
+ *    字段说明（每个字段都要写全，缺了搜索/背诵会异常）：
+ *      w   : 英文单词（必须唯一，不能和已有单词重复）
+ *      uk  : 英式音标（如 /əˈtend/）
+ *      us  : 美式音标
+ *      d   : 中文释义（含词性，如 "v. 出席；参加"）
+ *      ex  : 雅思风格英文例句（建议 8~16 个单词）
+ *      zh  : 例句的中文翻译
+ *      s   : 同义替换词数组，如 ["join","take part in"]
+ *      col : 写作搭配 / 高频搭配（会自动高亮显示）
+ *      c   : 分类数组，可多选。可选值（必须用引号）：
+ *            "听力词汇" / "阅读词汇" / "写作高分词" / "口语高频词" / "学术难词"
+ *    保存后刷新浏览器即可生效，无需任何其他操作。
+ *
+ *  ▍2. 修改 / 删除单词
+ *    直接改对应 {w:...} 里的字段；删掉整行即删除该词。
+ *    注意：若删词，已存在的本地学习记录（收藏/错题/已掌握）不会报错，
+ *    会自动忽略找不到的词条，无需担心。
+ *
+ *  ▍3. 自定义分类（新增标签）
+ *    a) 在 CATS 数组里加入新分类名：
+ *         const CATS=["听力词汇","阅读词汇","写作高分词","口语高频词","学术难词"];
+ *       → 改成例如 ["听力词汇","...","真题高频"]；
+ *    b) 给想要归入该分类的单词，在其 c 数组里加上该分类名；
+ *    c) 保存刷新即可，顶部筛选标签与学习数据页会自动多出该分类。
+ *
+ *  ▍4. 批量扩词建议
+ *    - 想从 344 词扩到 3500 词，只需持续在末尾追加；词库规模不设上限，
+ *      搜索、筛选、自测、背诵全部按数组长度自动适配。
+ *    - 大批量扩词时，可用 Excel 先整理成 CSV，再在文本编辑器里
+ *      用"查找替换"把每行转成上面的 JSON 格式，粘贴到数组中。
+ *
+ *  ▍5. 关于例句的说明
+ *    内置例句为"雅思风格示例句"，用于记忆与语境学习，并非剑桥真题原文；
+ *    如需严格贴合真题，可自行替换为真题原文（注意版权）。
+ * ============================================================ -->
